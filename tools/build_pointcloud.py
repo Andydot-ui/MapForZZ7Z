@@ -21,6 +21,9 @@ MINY = -310.0
 MINZ = -76.0
 LEAF_LEVEL = 4        # levels 0..3 sample, level 4 keeps everything
 SAMPLE_DIV = 128.0    # node keeps points on a grid of size/128
+# 叶子层原来保留全部点，导致 49.5 MB —— 但渲染预算只有约 260 万点，
+# 多出的点永远不会被画出来。按更粗的网格抽稀，体积减半而观感几乎不变。
+LEAF_SAMPLE_DIV = 96.0
 
 
 def main():
@@ -105,7 +108,17 @@ def main():
         alive = np.delete(alive, first)
         print(f"level {level}: sampled {len(sel)} -> {len(ids)} nodes, {len(alive)} left", flush=True)
 
-    # remaining points -> level LEAF_LEVEL leaves
+    # remaining points -> level LEAF_LEVEL leaves（按 LEAF_SAMPLE_DIV 抽稀）
+    size_leaf = GRID / (2 ** LEAF_LEVEL)
+    s_leaf = size_leaf / LEAF_SAMPLE_DIV
+    cellx = np.floor((x[alive] - minx) / s_leaf).astype(np.int64)
+    celly = np.floor((y[alive] - miny) / s_leaf).astype(np.int64)
+    cellz = np.floor((z[alive] - minz) / s_leaf).astype(np.int64)
+    ncell = int(2 ** LEAF_LEVEL * LEAF_SAMPLE_DIV)
+    key = cellx + celly * ncell + cellz * (ncell * ncell)
+    _, first = np.unique(key, return_index=True)
+    alive = alive[first]
+
     code = np.zeros(len(alive), dtype=np.int64)
     for j in range(LEAF_LEVEL):
         code = code * 8 + digits[alive, j]
