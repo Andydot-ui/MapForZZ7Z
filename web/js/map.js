@@ -51,6 +51,21 @@ map.on('load', () => {
       'raster-opacity': 1
     }
   });
+
+  // 初始视图「铺满」视口：取横向/纵向都够用的那个缩放级别，
+  // 桌面宽屏和手机竖屏都不会在两侧或上下露出底色。
+  const cover = () => {
+    const c = map.getContainer();
+    const W = c.clientWidth || 1, H = c.clientHeight || 1;
+    const latRad = ((BOUNDS[1] + BOUNDS[3]) / 2) * Math.PI / 180;
+    const mPerPxX = (BOUNDS[2] - BOUNDS[0]) * 111320 * Math.cos(latRad) / W;
+    const mPerPxY = (BOUNDS[3] - BOUNDS[1]) * 110574 / H;
+    const res = Math.min(mPerPxX, mPerPxY);
+    const z = Math.log2(156543.03392804097 * Math.cos(latRad) / res);
+    map.jumpTo({ center: CENTER, zoom: Math.min(z, ZMAX + 0.6) });
+  };
+  cover();
+  window.addEventListener('resize', cover);
 });
 
 /* ---------- UI ---------- */
