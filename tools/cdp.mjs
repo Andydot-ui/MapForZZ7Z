@@ -8,6 +8,9 @@ const url = process.argv[2];
 const out = process.argv[3];
 const waitMs = Number(process.argv[4] || 6000);
 const evalExpr = process.argv[5] || '';
+const MOBILE = process.env.CDP_MOBILE === '1';
+const VW = Number(process.env.CDP_W || (MOBILE ? 390 : 1440));
+const VH = Number(process.env.CDP_H || (MOBILE ? 844 : 900));
 const PORT = 9333;
 
 const proc = spawn(CHROME, [
@@ -15,7 +18,7 @@ const proc = spawn(CHROME, [
   `--remote-debugging-port=${PORT}`,
   '--enable-unsafe-swiftshader',
   '--hide-scrollbars',
-  '--window-size=1440,900',
+  `--window-size=${VW},${VH}`,
   '--no-first-run',
   '--no-default-browser-check',
   '--user-data-dir=' + 'C:\\Users\\andyd\\Documents\\deepseek-harness\\default-workspace\\MapForZZ7Z\\tools\\chromeprofile',
@@ -72,6 +75,12 @@ try {
   await rpc(ws, ++id, 'Runtime.enable');
   await rpc(ws, ++id, 'Log.enable');
   await rpc(ws, ++id, 'Page.enable');
+  if (MOBILE) {
+    await rpc(ws, ++id, 'Emulation.setDeviceMetricsOverride', {
+      width: VW, height: VH, deviceScaleFactor: 3, mobile: true,
+    });
+    await rpc(ws, ++id, 'Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+  }
   await rpc(ws, ++id, 'Page.navigate', { url });
   await sleep(waitMs);
 

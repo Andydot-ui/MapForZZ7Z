@@ -1,0 +1,31 @@
+# 静态资源缓存策略（Cloudflare Pages）
+# 瓦片 / 点云节点 / 模型内容不变，长缓存；HTML 与 JS 短缓存以便更新。
+
+/favicon.svg
+  Cache-Control: public, max-age=604800
+
+/tiles/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+/pointcloud/n/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+/models/*
+  Cache-Control: public, max-age=604800
+
+/vendor/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/js/*
+  Cache-Control: public, max-age=300
+
+/css/*
+  Cache-Control: public, max-age=300
+
+/
+  Cache-Control: public, max-age=300
+
+/3d.html
+  Cache-Control: public, max-age=300

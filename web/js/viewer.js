@@ -20,6 +20,34 @@ const GROUND = {
 const GROUND_Z = 88.9;                 // 模型地形底部 z≈89.2，影像面略低于此
 const HOME_POS = new THREE.Vector3(430, -430, 470);
 const HOME_TARGET = new THREE.Vector3(0, 0, 108);
+const HOME_DIR = HOME_TARGET.clone().sub(HOME_POS).normalize();
+const HOME_DIST = HOME_TARGET.distanceTo(HOME_POS);
+
+// 竖屏横向视野很窄（390×844 时约 24°），按宽高比把相机往后拉，
+// 同时压低俯角，让地面铺满竖直方向，避免上下大片空白。
+function homeView() {
+  const aspect = innerWidth / innerHeight;
+  const target = HOME_TARGET.clone();
+  if (aspect >= 1.15) return { pos: HOME_POS.clone(), target };
+
+  const az = Math.atan2(HOME_POS.y - HOME_TARGET.y, HOME_POS.x - HOME_TARGET.x);
+  const fit = Math.min(2.6, Math.pow(1.15 / aspect, 0.9));
+  const dist = HOME_DIST * fit;
+  const elev = THREE.MathUtils.degToRad(19);
+  const horiz = dist * Math.cos(elev);
+  const pos = new THREE.Vector3(
+    HOME_TARGET.x + Math.cos(az) * horiz,
+    HOME_TARGET.y + Math.sin(az) * horiz,
+    HOME_TARGET.z + dist * Math.sin(elev),
+  );
+  return { pos, target };
+}
+function resetView() {
+  const v = homeView();
+  camera.position.copy(v.pos);
+  controls.target.copy(v.target);
+  controls.update();
+}
 
 /* ---------- 渲染器 ---------- */
 const canvas = document.getElementById('scene');
@@ -32,15 +60,20 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.NoToneMapping;
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color('#0b0b0d');
-scene.fog = new THREE.Fog('#0b0b0d', 950, 2100);
+// 背景色与雾色取同一个值：远处地面按雾淡出后与背景完全同色，
+// 地平线自然消隐，任何视角都不会出现接缝或色带。
+const FOG_COLOR = '#171720';
+scene.background = new THREE.Color(FOG_COLOR);
+scene.fog = new THREE.Fog(FOG_COLOR, 760, 2300);
+
+
 
 const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.8, 6000);
 camera.up.set(0, 0, 1);            // Z-up
-camera.position.copy(HOME_POS);
+camera.position.copy(homeView().pos);
 
 const controls = new OrbitControls(camera, canvas);
-controls.target.copy(HOME_TARGET);
+controls.target.copy(homeView().target);
 controls.enableDamping = true;
 controls.dampingFactor = 0.08;
 controls.rotateSpeed = 0.85;
@@ -80,6 +113,21 @@ scene.add(groundGroup);
   );
   mesh.position.set((GROUND.x0 + GROUND.x1) / 2, (GROUND.y0 + GROUND.y1) / 2, GROUND_Z);
   groundGroup.add(mesh);
+}
+
+// 影像之外的大地面：向外延伸到雾里，竖屏取景时形成地平线而不是空洞
+{
+  const pad = 5200;
+  const cx = (GROUND.x0 + GROUND.x1) / 2;
+  const cy = (GROUND.y0 + GROUND.y1) / 2;
+  const w = GROUND.x1 - GROUND.x0 + pad * 2;
+  const h = GROUND.y1 - GROUND.y0 + pad * 2;
+  const plane = new THREE.Mesh(
+    new THREE.PlaneGeometry(w, h),
+    new THREE.MeshBasicMaterial({ color: '#17171d', toneMapped: false })
+  );
+  plane.position.set(cx, cy, GROUND_Z - 0.35);
+  groundGroup.add(plane);
 }
 
 /* ---------- 地面网格 ---------- */
@@ -336,17 +384,23 @@ gltfLoader.setDRACOLoader(draco);
 const loader = document.getElementById('loader');
 const loaderText = document.getElementById('loaderText');
 const bar = document.getElementById('bar');
+const modelBadge = document.getElementById('modelSub');
 let cloudDone = false, modelDone = false;
 
 function setProgress(p, text) {
   bar.style.width = (Math.min(1, p) * 100).toFixed(1) + '%';
   if (text) loaderText.textContent = text;
 }
+// 首屏只等点云元数据 + 地面影像；模型与点云节点在后台继续流式加载，
+// 避免慢网络下长时间停留在加载页。
+function dismissLoader() {
+  if (loader.classList.contains('hidden')) return;
+  setProgress(1, '场景就绪');
+  setTimeout(() => loader.classList.add('hidden'), 300);
+}
 function maybeHideLoader() {
-  if (cloudDone && modelDone) {
-    setProgress(1, '场景就绪');
-    setTimeout(() => loader.classList.add('hidden'), 400);
-  }
+  // 只要点云元数据就绪就先放行；模型随后在后台补上
+  if (cloudDone) dismissLoader();
 }
 
 gltfLoader.load(
@@ -370,13 +424,13 @@ gltfLoader.load(
     maybeHideLoader();
   },
   (ev) => {
-    if (ev.lengthComputable) {
+    if (ev.lengthComputable && !cloudDone) {
       setProgress(ev.loaded / ev.total, `载入三维模型 ${(ev.loaded / ev.total * 100).toFixed(0)}%`);
     }
   },
   (err) => {
     console.error('GLB load failed', err);
-    loaderText.textContent = '三维模型加载失败';
+    if (!cloudDone) loaderText.textContent = '三维模型加载失败';
     modelDone = true;
     maybeHideLoader();
   }
@@ -387,6 +441,7 @@ const statPts = document.getElementById('statPts');
 const statTris = document.getElementById('statTris');
 const statFps = document.getElementById('statFps');
 const cloudSub = document.getElementById('cloudSub');
+const modelSub = document.getElementById('modelSub');
 const compassNeedle = document.getElementById('compassNeedle');
 
 function fmt(n) {
@@ -398,6 +453,11 @@ function updateStats() {
   statPts.textContent = `点云 ${fmt(PC.points)} 点`;
   statTris.textContent = `三角面 ${fmt(triangleCount)}`;
   if (PC.nodeCount) cloudSub.textContent = `LOD ${PC.visibleNodes.size}/${PC.nodeCount} 节点`;
+  if (modelSub) {
+    modelSub.textContent = modelDone
+      ? `Draco · ${fmt(triangleCount)} 面`
+      : '流式载入中…';
+  }
 }
 
 /* ---------- 主循环 ---------- */
@@ -465,11 +525,7 @@ ptSize.addEventListener('input', () => {
   for (const pts of PC.visibleNodes.values()) pts.material.uniforms.uSize.value = v;
 });
 
-document.getElementById('btnHome').onclick = () => {
-  camera.position.copy(HOME_POS);
-  controls.target.copy(HOME_TARGET);
-  controls.update();
-};
+document.getElementById('btnHome').onclick = resetView;
 
 document.getElementById('btnTop').onclick = () => {
   const t = controls.target;
@@ -482,11 +538,37 @@ btnOrbit.onclick = () => {
   btnOrbit.classList.toggle('active', controls.autoRotate);
 };
 
-document.getElementById('compass').onclick = () => {
-  camera.position.copy(HOME_POS);
-  controls.target.copy(HOME_TARGET);
-  controls.update();
-};
+document.getElementById('compass').onclick = resetView;
+
+/* ---------- 移动端图层面板 ---------- */
+const panelToggle = document.getElementById('panelToggle');
+const layerPanel = document.getElementById('layerPanel');
+const narrow = () => matchMedia('(max-width:720px)').matches;
+
+function syncPanel() {
+  const open = layerPanel.classList.contains('open');
+  panelToggle.setAttribute('aria-expanded', String(open));
+  panelToggle.classList.toggle('active', open);
+}
+panelToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
+  layerPanel.classList.toggle('open');
+  syncPanel();
+});
+// 点击画布或缩放视角时自动收起，保持画面干净
+renderer.domElement.addEventListener('pointerdown', () => {
+  if (narrow() && layerPanel.classList.contains('open')) {
+    layerPanel.classList.remove('open');
+    syncPanel();
+  }
+});
+// 桌面端窗口放大时清掉移动端状态
+matchMedia('(max-width:720px)').addEventListener('change', (e) => {
+  if (!e.matches) {
+    layerPanel.classList.remove('open');
+    syncPanel();
+  }
+});
 
 addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;
@@ -507,3 +589,20 @@ loadCloudMeta().then(() => {
 
 setProgress(0.04, '初始化渲染器…');
 requestAnimationFrame(tick);
+
+// 调试/联调用：便于在控制台检查取景与图层状态
+window.__map3d = {
+  camera, controls, scene, renderer, PC, homeView, resetView, updateLOD,
+  setElev(deg) {
+    const t = controls.target;
+    const az = Math.atan2(camera.position.y - t.y, camera.position.x - t.x);
+    const dist = camera.position.distanceTo(t);
+    const e = THREE.MathUtils.degToRad(deg);
+    camera.position.set(
+      t.x + Math.cos(az) * dist * Math.cos(e),
+      t.y + Math.sin(az) * dist * Math.cos(e),
+      t.z + dist * Math.sin(e),
+    );
+    controls.update();
+  },
+};

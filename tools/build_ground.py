@@ -1,4 +1,6 @@
 """Export a single ground texture (in the same local frame as the GLB / point cloud)."""
+import os
+
 import numpy as np
 import rasterio
 from rasterio.enums import Resampling
@@ -7,7 +9,7 @@ from PIL import Image
 SRC = r"C:\Users\andyd\Downloads\输出.tif"
 OUT = r"C:\Users\andyd\Documents\deepseek-harness\default-workspace\MapForZZ7Z\web\models\ground.webp"
 CENTER = (743487.0, 3857689.0, 0.0)
-SIZE = 4096
+SIZE = 2560
 
 with rasterio.open(SRC) as ds:
     data = ds.read(out_shape=(4, SIZE, SIZE), resampling=Resampling.lanczos)
@@ -24,6 +26,5 @@ y1 = b.top - CENTER[1]
 print("plane x", x0, x1, "y", y0, y1)
 print("size", img.size)
 
-img.save(OUT, "WEBP", quality=86, method=6)
-import os
+img.save(OUT, "WEBP", quality=80, method=6)
 print("bytes", os.path.getsize(OUT) / 1e6, "MB")

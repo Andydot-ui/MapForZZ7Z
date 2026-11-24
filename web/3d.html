@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#0b0b0d">
 <title>三维模型 &amp; 点云 · MapForZZ7Z</title>
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="./css/app.css">
 <link rel="stylesheet" href="./css/viewer.css">
 </head>
@@ -34,8 +35,16 @@
   </div>
 </div>
 
+<!-- 移动端唤出图层面板的胶囊按钮 -->
+<button class="panel-toggle" id="panelToggle" aria-controls="layerPanel" aria-expanded="false">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+    <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/>
+  </svg>
+  <span>图层</span>
+</button>
+
 <!-- 左侧图层面板 -->
-<aside class="panel layers" id="layerPanel">
+<aside class="panel layers collapsed-mobile" id="layerPanel">
   <h2 class="panel-title">图层</h2>
 
   <div class="layer-row" data-layer="model">
@@ -44,7 +53,7 @@
     </div>
     <div class="layer-meta">
       <span class="layer-name">三维模型</span>
-      <span class="layer-sub">Draco · 19 MB</span>
+      <span class="layer-sub" id="modelSub">Draco · 9.8 MB</span>
     </div>
     <button class="switch on" aria-label="切换三维模型"></button>
   </div>

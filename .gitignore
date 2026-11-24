@@ -3,6 +3,8 @@ node_modules/
 **/node_modules/
 .chromeprofile/
 chromeprofile/
+.wrangler/
+**/.wrangler/
 
 # 构建日志与中间产物
 tools/*.log
@@ -10,7 +12,7 @@ tools/shots/
 tools/__pycache__/
 *.pyc
 
-# 原始数据（超过 GitHub 单文件限制，通过 Release / LFS 单独分发）
+# 原始数据（超出 GitHub 单文件限制，通过 Release / LFS 单独分发）
 *.tif
 *.tiff
 *.laz

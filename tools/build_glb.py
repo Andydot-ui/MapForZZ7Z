@@ -1,4 +1,4 @@
-"""Shrink the GLB textures for web delivery without touching geometry.
+﻿"""Shrink the GLB textures for web delivery without touching geometry.
 
 Geometry stays Draco-compressed; only the JPEG payloads are replaced by
 downscaled / re-compressed versions, then the buffer is rebuilt.
@@ -13,9 +13,9 @@ from PIL import Image
 SRC = r"C:\Users\andyd\Downloads\-textured_model.glb"
 OUT = r"C:\Users\andyd\Documents\deepseek-harness\default-workspace\MapForZZ7Z\web\models\textured_model.glb"
 
-MAX_TEX = 2048          # cap for the big 8k atlases
-MAX_TEX_SMALL = 2048
-QUALITY = 72
+MAX_TEX = 1024          # cap for the big 8k atlases
+MAX_TEX_SMALL = 1024
+QUALITY = 80
 
 
 def read_glb(path):
@@ -109,3 +109,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

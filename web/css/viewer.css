@@ -2,13 +2,19 @@
    3D 场景页 · 深色玻璃面板（Apple Maps 3D / Look Around 风格）
    =========================================================== */
 body.viewer-page{
-  background:#0b0b0d;
+  /* 天空渐变：上方略亮、地平线偏暖，让场景外围的留白看起来是天空 */
+  background:
+    radial-gradient(120% 78% at 50% 96%, #23232c 0%, #16161c 42%, #0b0b0f 78%),
+    linear-gradient(#0d0d12, #0a0a0d);
+  background-attachment:fixed;
   color:#f5f5f7;
 }
 #scene{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
 
 .topbar.dark{
   background:linear-gradient(to bottom,rgba(18,18,20,.82),rgba(18,18,20,.45) 70%,rgba(18,18,20,0));
+  /* 场景背景是纯色，模糊没有意义，反而会在元素下边缘留下一条硬边接缝 */
+  -webkit-backdrop-filter:none;backdrop-filter:none;
 }
 .topbar.dark .brand-name{color:#f5f5f7}
 .topbar-right.dark{
@@ -132,14 +138,31 @@ input[type=range]::-moz-range-thumb{
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ---------- 移动端 ---------- */
+.panel-toggle{display:none}
 @media (max-width:720px){
-  .panel{left:12px;right:12px;width:auto;top:calc(58px + env(safe-area-inset-top));
-    padding:10px 10px 8px;border-radius:16px}
-  .layer-row{padding:7px 6px}
-  .point-size{padding:0 4px 2px}
-  .view-actions{right:12px;bottom:calc(48px + env(safe-area-inset-bottom))}
+  /* 图层面板在移动端收成浮层：默认隐藏，由左上角胶囊按钮唤出 */
+  .panel-toggle{display:flex;align-items:center;gap:6px;position:fixed;
+    left:12px;top:calc(58px + env(safe-area-inset-top));z-index:40;
+    height:34px;padding:0 13px;border-radius:17px;border:1px solid var(--stroke);
+    background:rgba(38,38,42,.62);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+    color:#f5f5f7;font-size:13px;font-weight:500;cursor:pointer;
+    transition:background .18s var(--ease),transform .18s var(--ease)}
+  .panel-toggle:active{transform:scale(.95);background:rgba(58,58,64,.72)}
+  .panel-toggle.active{background:rgba(10,132,255,.86);border-color:transparent}
+  .panel-toggle svg{width:15px;height:15px;opacity:.85}
+
+  .panel{left:12px;right:12px;width:auto;top:calc(102px + env(safe-area-inset-top));
+    padding:8px 8px 6px;border-radius:16px;max-height:56vh;overflow:auto;
+    transform-origin:top left;opacity:0;pointer-events:none;transform:scale(.94) translateY(-6px);
+    transition:opacity .22s var(--ease),transform .22s var(--ease)}
+  .panel.open{opacity:1;pointer-events:auto;transform:none}
+
+  .layer-row{padding:6px 4px}
+  .layer-sub{font-size:10px}
+  .point-size{padding:2px 4px 0}
+  .view-actions{right:12px;bottom:calc(48px + env(safe-area-inset-bottom));gap:6px}
   .vbtn span{display:none}
   .vbtn{padding:9px}
   .statusbar{left:12px;bottom:calc(12px + env(safe-area-inset-bottom));font-size:10.5px;padding:5px 10px}
-  .compass{right:14px;top:calc(70px + env(safe-area-inset-top));transform:scale(.82);transform-origin:top right}
+  .compass{right:14px;top:calc(58px + env(safe-area-inset-top));transform:scale(.82);transform-origin:top right}
 }
