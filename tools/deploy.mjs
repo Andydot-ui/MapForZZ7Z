@@ -10,9 +10,13 @@ const WEB = path.join(ROOT, 'web');
 const WRANGLER = path.join(HERE, 'node_modules', 'wrangler', 'bin', 'wrangler.js');
 const PROJECT = process.env.CF_PAGES_PROJECT || 'mapforzz7z';
 const BRANCH = process.env.CF_PAGES_BRANCH || 'main';
+const ATTEMPTS = Number(process.env.CF_DEPLOY_ATTEMPTS || 4);
 
-// wrangler is a JS entry point; run it with the current node binary
+// wrangler 是 JS 入口，用当前 node 执行。
+// 本机 IPv6 出口不通，Node 默认会优先连 AAAA 地址导致 fetch failed；
+// 用 execArgv 给子进程加 IPv4 优先（比 NODE_OPTIONS 更可靠）。
 const args = [
+  '--dns-result-order=ipv4first',
   WRANGLER,
   'pages', 'deploy', WEB,
   '--project-name', PROJECT,
@@ -20,17 +24,21 @@ const args = [
   '--commit-dirty=true',
 ];
 
+// api.cloudflare.com 从本机连接很慢，偶发 10s 连接超时 —— 失败就重试。
 console.log(`deploying ${WEB} -> ${PROJECT} (${BRANCH})`);
-// 本机 IPv6 出口不通，Node 会优先解析到 AAAA 记录导致 fetch failed；
-// 强制 IPv4 优先，避免部署随机失败。
-const env = { ...process.env, NODE_OPTIONS: '--dns-result-order=ipv4first' };
-const res = spawnSync(process.execPath, args, {
-  stdio: 'inherit',
-  cwd: WEB,
-  env,
-});
+for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
+  const res = spawnSync(process.execPath, args, {
+    stdio: 'inherit',
+    cwd: WEB,
+    env: process.env,
+  });
+  if (res.status === 0) process.exit(0);
 
-if (res.status !== 0) {
-  console.error('deploy failed with exit code', res.status);
-  process.exit(res.status ?? 1);
+  if (attempt === ATTEMPTS) {
+    console.error(`deploy failed after ${ATTEMPTS} attempts (last exit ${res.status})`);
+    process.exit(res.status ?? 1);
+  }
+  const wait = attempt * 8;
+  console.warn(`deploy attempt ${attempt} failed; retrying in ${wait}s ...`);
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, wait * 1000);
 }
