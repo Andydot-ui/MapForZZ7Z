@@ -65,11 +65,11 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.NoToneMapping;
 
 const scene = new THREE.Scene();
-// 背景色与雾色取同一个值：远处地面按雾淡出后与背景完全同色，
-// 地平线自然消隐，任何视角都不会出现接缝或色带。
+// 场景里不再有延伸到远处的大地面，雾只作为极远处的兜底淡出，
+// 起始距离放到模型/点云之外，避免主体被雾吃掉颜色。
 const FOG_COLOR = '#171720';
 scene.background = new THREE.Color(FOG_COLOR);
-scene.fog = new THREE.Fog(FOG_COLOR, 760, 2300);
+scene.fog = new THREE.Fog(FOG_COLOR, 1500, 3400);
 
 
 
@@ -100,42 +100,10 @@ const rim = new THREE.DirectionalLight(0x7ea8ff, 0.55);
 rim.position.set(-520, 480, 320);
 scene.add(rim);
 
-/* ---------- 地面影像 ---------- */
-const groundGroup = new THREE.Group();
-scene.add(groundGroup);
-{
-  const w = GROUND.x1 - GROUND.x0;
-  const h = GROUND.y1 - GROUND.y0;
-  const tex = new THREE.TextureLoader().load('./models/ground.webp');
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-  tex.minFilter = THREE.LinearMipmapLinearFilter;
-  tex.magFilter = THREE.LinearFilter;
-  // PlaneGeometry 天然位于 XY 平面、法线 +Z —— 正好符合 Z-up
-  const mesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(w, h),
-    new THREE.MeshBasicMaterial({ map: tex, toneMapped: false })
-  );
-  mesh.position.set((GROUND.x0 + GROUND.x1) / 2, (GROUND.y0 + GROUND.y1) / 2, GROUND_Z);
-  groundGroup.add(mesh);
-}
-
-// 影像之外的大地面：向外延伸到雾里，竖屏取景时形成地平线而不是空洞
-{
-  const pad = 5200;
-  const cx = (GROUND.x0 + GROUND.x1) / 2;
-  const cy = (GROUND.y0 + GROUND.y1) / 2;
-  const w = GROUND.x1 - GROUND.x0 + pad * 2;
-  const h = GROUND.y1 - GROUND.y0 + pad * 2;
-  const plane = new THREE.Mesh(
-    new THREE.PlaneGeometry(w, h),
-    new THREE.MeshBasicMaterial({ color: '#17171d', toneMapped: false })
-  );
-  plane.position.set(cx, cy, GROUND_Z - 0.35);
-  groundGroup.add(plane);
-}
-
 /* ---------- 地面网格 ---------- */
+// 场景里只保留模型、点云与网格：不再铺正射底图，也不铺延伸到雾里的深色大平面，
+// 模型与点云直接悬浮在背景渐变上，看起来干净。
+
 const gridGroup = new THREE.Group();
 scene.add(gridGroup);
 {
@@ -300,7 +268,37 @@ const _frustum = new THREE.Frustum();
 const _m4 = new THREE.Matrix4();
 const _box = new THREE.Box3();
 const _v = new THREE.Vector3();
-const _dir = new THREE.Vector3();
+
+/* ---------- 罗盘 ---------- */
+// 指针方向 = 世界正北在当前屏幕上的投影方向。
+// 直接用相机朝向 atan2(dir.x, dir.y) 会在某些角度过分支点而突跳 180°，
+// 改成把北向量投到相机的屏幕基（right / up）上，得到连续的屏幕角度；
+// 再对角度做展开（unwrap），避免 ±π 处的回绕让 CSS 过渡反向旋转一圈。
+const _north = new THREE.Vector3(0, 1, 0);
+const _right = new THREE.Vector3();
+const _up = new THREE.Vector3();
+let _needleAngle = 0;
+
+function updateCompass() {
+  camera.updateMatrixWorld();
+  _right.setFromMatrixColumn(camera.matrixWorld, 0).normalize();
+  _up.setFromMatrixColumn(camera.matrixWorld, 1).normalize();
+  // 屏幕坐标下：x 向右、y 向上；CSS 的 rotate 正方向是顺时针
+  const sx = _north.dot(_right);
+  const sy = _north.dot(_up);
+  // 视线几乎正对正北时，北向量在屏幕上的投影趋近于零，角度在数学上无定义，
+  // 此时保持上一帧角度，避免指针乱甩。
+  if (Math.hypot(sx, sy) < 0.05) {
+    compassNeedle.style.transform = `rotate(${_needleAngle}rad)`;
+    return;
+  }
+  let a = Math.atan2(sx, sy);
+  // 展开到离上一帧最近的一圈
+  while (a - _needleAngle > Math.PI) a -= Math.PI * 2;
+  while (a - _needleAngle < -Math.PI) a += Math.PI * 2;
+  _needleAngle = a;
+  compassNeedle.style.transform = `rotate(${a}rad)`;
+}
 
 function updateLOD() {
   if (!PC.ready) return;
@@ -483,9 +481,7 @@ function tick(now) {
     updateLOD();
   }
 
-  camera.getWorldDirection(_dir);
-  // 北 = +Y，东 = +X
-  compassNeedle.style.transform = `rotate(${-Math.atan2(_dir.x, _dir.y)}rad)`;
+  updateCompass();
 
   fpsAcc += dt; fpsN++;
   if (fpsAcc > 600) {

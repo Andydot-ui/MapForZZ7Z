@@ -7,14 +7,14 @@
 
 | 页面 | 路径 | 说明 |
 | --- | --- | --- |
-| 影像地图 | `/index.html` | MapLibre GL JS + XYZ WebP 瓦片（z16–z21） |
+| 影像地图 | `/index.html` | MapLibre GL JS + XYZ WebP 瓦片（z15–z21） |
 | 三维场景 | `/3d.html` | Three.js 渲染 GLB（Draco）+ 八叉树 LOD 点云 |
 
 ## 数据
 
 | 原始数据 | 大小 | 处理结果 |
 | --- | --- | --- |
-| `输出.tif`（GeoTIFF, EPSG:32649, 11319×11830, 0.05 m） | 351 MB | 2 020 张 WebP 瓦片，21 MB；另生成 1 536 px 地面贴图，0.55 MB |
+| `输出.tif`（GeoTIFF, EPSG:32649, 11319×11830, 0.05 m） | 351 MB | 2 374 张 WebP 瓦片，21.9 MB |
 | `-textured_model.glb`（glTF 2.0 + Draco + CESIUM_RTC） | 143 MB | 贴图重压缩为 1 024 px，**9.8 MB**（308.5 K 三角面） |
 | `-georeferenced_model.laz`（LAS 1.2 PDRF 3, 5 502 820 点） | 29 MB | 八叉树 LOD 407 节点、2.95 M 点，**26.6 MB** |
 
@@ -36,10 +36,10 @@ node tools/serve.mjs web 8787
 ## 重新生成资源
 
 ```bash
-python tools/build_tiles.py       # GeoTIFF -> WebP 瓦片
+python tools/build_tiles.py       # GeoTIFF -> WebP 瓦片（ONLY_Z=15 只重建某级）
+python tools/build_ring_tiles.py  # 影像外一圈全透明瓦片，避免 404
 python tools/build_glb.py         # GLB 贴图降采样
 python tools/build_pointcloud.py  # LAZ -> 八叉树 LOD
-python tools/build_ground.py      # GeoTIFF -> 3D 地面贴图
 ```
 
 ## 部署
@@ -63,7 +63,7 @@ web/                 站点根目录（Pages 上传内容）
   css/ js/           样式与逻辑
   vendor/            MapLibre GL JS、Three.js、Draco 解码器
   tiles/             XYZ WebP 瓦片
-  models/            GLB 与地面贴图
+  models/            GLB 模型
   pointcloud/        octree.json + 节点 .bin
 tools/               构建与部署脚本（不参与部署）
 ```
@@ -71,9 +71,14 @@ tools/               构建与部署脚本（不参与部署）
 ## 实现要点
 
 - **瓦片**：GeoTIFF 重投影到 EPSG:3857，按瓦片网格对齐切片（相邻瓦片无透明接缝），WebP q82。
-- **初始视图**：按视口尺寸计算「铺满」所需缩放，宽屏与竖屏都不留底色边。
+- **初始视图**：按墨卡托跨度算出「整幅影像刚好装进视口」的缩放级别（contain），
+  四周留底色内边距，整幅图居中完整显示；用户一旦自己拖动或缩放就不再自动重设。
+- **深色模式**：跟随系统 `prefers-color-scheme`，玻璃面板、底色、控件、比例尺同步切换，
+  切换时地图底色与页面主题实时联动。
 - **点云**：八叉树 LOD，节点内坐标量化为 uint16（9 字节/点），
   着色器里用 `uMin`/`uSpan` 还原，按屏幕误差 2 px + 260 万点预算流式加载；
   各级节点按网格抽稀，叶子层同样抽稀（体积减半、观感不变）。
 - **渐进加载**：点云元数据一到就撤掉载入遮罩，模型在后台继续下载。
+- **三维场景**：只保留模型、点云与地面网格，不铺正射底图、不铺深色大平面，
+  物体直接浮在背景渐变上；罗盘指针取世界正北在屏幕上的投影，连续转动不会突跳。
 - **界面**：Apple Maps 风格玻璃面板；窄屏（≤720px）图层收进「图层」胶囊按钮。

@@ -1,4 +1,4 @@
-"""Reproject the GeoTIFF to Web Mercator and emit XYZ WebP tiles (z16..z21).
+"""Reproject the GeoTIFF to Web Mercator and emit XYZ WebP tiles (z15..z21).
 
 每个缩放级别都直接重投影到「与 XYZ 瓦片网格严格对齐」的栅格上，
 因此每张瓦片就是一次干净的 256×256 裁剪，相邻瓦片像素完全吻合，
@@ -16,9 +16,12 @@ from PIL import Image
 SRC = r"C:\Users\andyd\Downloads\输出.tif"
 OUT = r"C:\Users\andyd\Documents\deepseek-harness\default-workspace\MapForZZ7Z\web\tiles"
 
-ZMIN, ZMAX = 16, 21
+ZMIN, ZMAX = 15, 21
 TILE = 256
 QUALITY = 82
+
+# 只重建指定层级：ONLY_Z=15 python tools/build_tiles.py
+ONLY_Z = {int(v) for v in os.environ.get("ONLY_Z", "").replace(",", " ").split()} or None
 
 R = 6378137.0
 WORLD = 2 * math.pi * R
@@ -47,6 +50,8 @@ def main():
     with rasterio.open(SRC) as ds:
         src_bands = rasterio.band(ds, (1, 2, 3, 4))
         for z in range(ZMIN, ZMAX + 1):
+            if ONLY_Z and z not in ONLY_Z:
+                continue
             n = 2 ** z
             tsz = WORLD / n              # 每张瓦片对应的墨卡托边长（米）
             px = tsz / TILE              # 每像素对应的墨卡托长度

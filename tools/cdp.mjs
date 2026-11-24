@@ -13,6 +13,8 @@ if (evalExpr.startsWith('@')) {
   evalExpr = fs.readFileSync(evalExpr.slice(1), 'utf8');
 }
 const MOBILE = process.env.CDP_MOBILE === '1';
+// CDP_SCHEME=light|dark 强制 prefers-color-scheme（headless Chrome 默认是 dark）
+const SCHEME = process.env.CDP_SCHEME || '';
 const VW = Number(process.env.CDP_W || (MOBILE ? 390 : 1440));
 const VH = Number(process.env.CDP_H || (MOBILE ? 844 : 900));
 const PORT = 9333;
@@ -73,12 +75,21 @@ try {
       logs.push(`[EXCEPTION] ${d.text} ${d.exception?.description || ''}`);
     } else if (m.method === 'Log.entryAdded') {
       logs.push(`[log:${m.params.entry.level}] ${m.params.entry.text}`);
+    } else if (m.method === 'Network.responseReceived' && process.env.CDP_NET === '1') {
+      const r = m.params.response;
+      if (r.status >= 400) logs.push(`[net ${r.status}] ${r.url}`);
     }
   });
 
   await rpc(ws, ++id, 'Runtime.enable');
   await rpc(ws, ++id, 'Log.enable');
   await rpc(ws, ++id, 'Page.enable');
+  if (process.env.CDP_NET === '1') await rpc(ws, ++id, 'Network.enable');
+  if (SCHEME) {
+    await rpc(ws, ++id, 'Emulation.setEmulatedMedia', {
+      features: [{ name: 'prefers-color-scheme', value: SCHEME }],
+    });
+  }
   if (MOBILE) {
     await rpc(ws, ++id, 'Emulation.setDeviceMetricsOverride', {
       width: VW, height: VH, deviceScaleFactor: 3, mobile: true,
