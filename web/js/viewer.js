@@ -23,24 +23,29 @@ const HOME_TARGET = new THREE.Vector3(0, 0, 108);
 const HOME_DIR = HOME_TARGET.clone().sub(HOME_POS).normalize();
 const HOME_DIST = HOME_TARGET.distanceTo(HOME_POS);
 
-// 竖屏横向视野很窄（390×844 时约 24°），按宽高比把相机往后拉，
-// 同时压低俯角，让地面铺满竖直方向，避免上下大片空白。
+// 竖屏横向视野很窄（390×844 时约 24°），方形地块只能靠「抬高俯角」来占满竖直方向：
+// 俯角越大，地块在屏幕上越接近正方形，而不会被压成一条扁带。
+// 越窄的屏幕俯角越高，同时相机拉近到宽度刚好铺满。
 function homeView() {
   const aspect = innerWidth / innerHeight;
   const target = HOME_TARGET.clone();
   if (aspect >= 1.15) return { pos: HOME_POS.clone(), target };
 
   const az = Math.atan2(HOME_POS.y - HOME_TARGET.y, HOME_POS.x - HOME_TARGET.x);
-  const fit = Math.min(2.6, Math.pow(1.15 / aspect, 0.9));
+  const fit = Math.pow(1.15 / aspect, 0.62);
   const dist = HOME_DIST * fit;
-  const elev = THREE.MathUtils.degToRad(19);
+  const t = Math.min(1, Math.max(0, (1.0 - aspect) / 0.5));
+  const elev = THREE.MathUtils.degToRad(19 + 26 * t);
+  // 俯角变大后画面重心会偏下，把注视点略微抬高，让地块垂直居中。
+  const lift = 34 * t;
+  const aim = new THREE.Vector3(target.x, target.y, target.z + lift);
   const horiz = dist * Math.cos(elev);
   const pos = new THREE.Vector3(
-    HOME_TARGET.x + Math.cos(az) * horiz,
-    HOME_TARGET.y + Math.sin(az) * horiz,
-    HOME_TARGET.z + dist * Math.sin(elev),
+    aim.x + Math.cos(az) * horiz,
+    aim.y + Math.sin(az) * horiz,
+    aim.z + dist * Math.sin(elev),
   );
-  return { pos, target };
+  return { pos, target: aim };
 }
 function resetView() {
   const v = homeView();
@@ -592,7 +597,8 @@ requestAnimationFrame(tick);
 
 // 调试/联调用：便于在控制台检查取景与图层状态
 window.__map3d = {
-  camera, controls, scene, renderer, PC, homeView, resetView, updateLOD,
+  camera, controls, scene, renderer, PC, homeView, resetView, updateLOD, THREE,
+  HOME_POS, HOME_TARGET, GROUND, GROUND_Z,
   setElev(deg) {
     const t = controls.target;
     const az = Math.atan2(camera.position.y - t.y, camera.position.x - t.x);

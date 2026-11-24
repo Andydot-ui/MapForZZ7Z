@@ -7,7 +7,11 @@ const CHROME = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const url = process.argv[2];
 const out = process.argv[3];
 const waitMs = Number(process.argv[4] || 6000);
-const evalExpr = process.argv[5] || '';
+let evalExpr = process.argv[5] || '';
+// 多行脚本走 @file，避免命令行转义把表达式弄坏
+if (evalExpr.startsWith('@')) {
+  evalExpr = fs.readFileSync(evalExpr.slice(1), 'utf8');
+}
 const MOBILE = process.env.CDP_MOBILE === '1';
 const VW = Number(process.env.CDP_W || (MOBILE ? 390 : 1440));
 const VH = Number(process.env.CDP_H || (MOBILE ? 844 : 900));
