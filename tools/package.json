@@ -1,0 +1,11 @@
+{
+  "name": "mapforzz7z-tools",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "maplibre-gl": "^6.19.0",
+    "three": "^0.187.0",
+    "wrangler": "^4.166.0"
+  }
+}

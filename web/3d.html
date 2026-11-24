@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0b0b0d">
+<title>三维模型 &amp; 点云 · MapForZZ7Z</title>
+<link rel="stylesheet" href="./css/app.css">
+<link rel="stylesheet" href="./css/viewer.css">
+</head>
+<body class="viewer-page">
+
+<canvas id="scene"></canvas>
+
+<header class="topbar dark">
+  <div class="topbar-left">
+    <div class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="18" height="18"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 4v13.5M15 6.5V20" stroke="currentColor" stroke-width="1.6"/></svg>
+    </div>
+    <span class="brand-name">三维场景</span>
+  </div>
+  <nav class="topbar-right dark">
+    <a class="pill" href="./index.html">地图</a>
+    <a class="pill active" href="./3d.html">三维模型 &amp; 点云</a>
+  </nav>
+</header>
+
+<!-- 加载进度 -->
+<div class="loader" id="loader">
+  <div class="loader-inner">
+    <div class="ring"><span></span></div>
+    <div class="loader-text" id="loaderText">正在载入场景…</div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+  </div>
+</div>
+
+<!-- 左侧图层面板 -->
+<aside class="panel layers" id="layerPanel">
+  <h2 class="panel-title">图层</h2>
+
+  <div class="layer-row" data-layer="model">
+    <div class="layer-ico">
+      <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 3v18M4 7.5l8 4.5 8-4.5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>
+    </div>
+    <div class="layer-meta">
+      <span class="layer-name">三维模型</span>
+      <span class="layer-sub">Draco · 19 MB</span>
+    </div>
+    <button class="switch on" aria-label="切换三维模型"></button>
+  </div>
+
+  <div class="layer-row" data-layer="cloud">
+    <div class="layer-ico">
+      <svg viewBox="0 0 24 24" width="16" height="16"><g fill="currentColor"><circle cx="7" cy="9" r="1.4"/><circle cx="12" cy="7" r="1.4"/><circle cx="17" cy="10" r="1.4"/><circle cx="9" cy="14" r="1.4"/><circle cx="14" cy="15" r="1.4"/><circle cx="18" cy="15" r="1.4"/><circle cx="6" cy="17" r="1.4"/><circle cx="11" cy="18" r="1.4"/></g></svg>
+    </div>
+    <div class="layer-meta">
+      <span class="layer-name">点云</span>
+      <span class="layer-sub" id="cloudSub">LOD 流式加载</span>
+    </div>
+    <button class="switch on" aria-label="切换点云"></button>
+  </div>
+
+  <div class="layer-row" data-layer="wire">
+    <div class="layer-ico">
+      <svg viewBox="0 0 24 24" width="16" height="16"><path d="M4 6h16v12H4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="3 2.5"/></svg>
+    </div>
+    <div class="layer-meta">
+      <span class="layer-name">线框</span>
+      <span class="layer-sub">结构轮廓</span>
+    </div>
+    <button class="switch" aria-label="切换线框"></button>
+  </div>
+
+  <div class="layer-row" data-layer="grid">
+    <div class="layer-ico">
+      <svg viewBox="0 0 24 24" width="16" height="16"><path d="M3 12h18M12 3v18" stroke="currentColor" stroke-width="1.2" opacity=".7"/><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>
+    </div>
+    <div class="layer-meta">
+      <span class="layer-name">地面网格</span>
+      <span class="layer-sub">10 m 间距</span>
+    </div>
+    <button class="switch on" aria-label="切换地面网格"></button>
+  </div>
+
+  <div class="panel-divider"></div>
+
+  <div class="point-size">
+    <label for="ptSize">点大小</label>
+    <input type="range" id="ptSize" min="0.4" max="6" step="0.1" value="1.6">
+    <span class="val" id="ptSizeVal">1.6</span>
+  </div>
+</aside>
+
+<!-- 右下 视角按钮 -->
+<div class="view-actions">
+  <button class="vbtn" id="btnHome" title="复位视角">
+    <svg viewBox="0 0 24 24" width="18" height="18"><path d="M4 10.5 12 4l8 6.5V20H4z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.5 20v-6h5v6" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+    <span>复位</span>
+  </button>
+  <button class="vbtn" id="btnTop" title="俯视">
+    <svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 4v10M8 10l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5 19h14" stroke="currentColor" stroke-width="1.8"/></svg>
+    <span>俯视</span>
+  </button>
+  <button class="vbtn" id="btnOrbit" title="自动环绕">
+    <svg viewBox="0 0 24 24" width="18" height="18"><ellipse cx="12" cy="12" rx="8" ry="4" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="8" r="2" fill="currentColor"/></svg>
+    <span>环绕</span>
+  </button>
+</div>
+
+<!-- 底部状态 -->
+<div class="statusbar">
+  <span id="statPts">点云 0 点</span>
+  <span class="sep"></span>
+  <span id="statTris">三角面 —</span>
+  <span class="sep"></span>
+  <span id="statFps">— fps</span>
+</div>
+
+<!-- 罗盘 -->
+<div class="compass" id="compass" title="指北">
+  <svg viewBox="0 0 48 48" width="46" height="46">
+    <circle cx="24" cy="24" r="21" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+    <g id="compassNeedle">
+      <path d="M24 8l4.5 13-4.5-2.5L19.5 21z" fill="#ff453a"/>
+      <path d="M24 40l-4.5-13 4.5 2.5 4.5-2.5z" fill="rgba(255,255,255,.75)"/>
+    </g>
+  </svg>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three.module.js",
+    "three/addons/": "./vendor/three-addons/"
+  }
+}
+</script>
+<script type="module" src="./js/viewer.js"></script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+/* ===========================================================
+   MapForZZ7Z · Apple Maps 风格 UI
+   =========================================================== */
+:root{
+  --bg:#f5f5f7;
+  --panel:rgba(255,255,255,.72);
+  --panel-solid:#ffffff;
+  --stroke:rgba(0,0,0,.08);
+  --stroke-strong:rgba(0,0,0,.14);
+  --text:#1d1d1f;
+  --text-2:#6e6e73;
+  --text-3:#86868b;
+  --blue:#0071e3;
+  --blue-hover:#0077ed;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.06);
+  --shadow-md:0 2px 6px rgba(0,0,0,.08),0 8px 24px rgba(0,0,0,.10);
+  --shadow-lg:0 4px 12px rgba(0,0,0,.10),0 16px 48px rgba(0,0,0,.16);
+  --r-sm:8px; --r-md:12px; --r-lg:18px; --r-pill:999px;
+  --blur:saturate(180%) blur(20px);
+  --ease:cubic-bezier(.32,.72,0,1);
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  color:var(--text);
+  background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+}
+a{text-decoration:none;color:inherit}
+
+/* ---------- 顶部栏 ---------- */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:30;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:10px 16px;
+  padding-top:calc(10px + env(safe-area-inset-top));
+  background:linear-gradient(to bottom,rgba(255,255,255,.82),rgba(255,255,255,.55) 70%,rgba(255,255,255,0));
+  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+  pointer-events:none;
+}
+.topbar > *{pointer-events:auto}
+.topbar-left{display:flex;align-items:center;gap:8px}
+.brand-mark{
+  width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
+  background:linear-gradient(160deg,#0a84ff,#0066cc);
+  color:#fff;box-shadow:0 2px 6px rgba(0,102,204,.35);
+}
+.brand-name{font-size:17px;font-weight:600;letter-spacing:-.2px}
+.topbar-right{display:flex;align-items:center;gap:6px;
+  background:var(--panel);border:1px solid var(--stroke);
+  border-radius:var(--r-pill);padding:3px;box-shadow:var(--shadow-sm);
+  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+}
+.pill{
+  font-size:13px;font-weight:500;padding:6px 14px;border-radius:var(--r-pill);
+  color:var(--text-2);white-space:nowrap;transition:all .22s var(--ease);
+}
+.pill:hover{color:var(--text);background:rgba(0,0,0,.04)}
+.pill.active{background:#fff;color:var(--text);font-weight:600;
+  box-shadow:0 1px 3px rgba(0,0,0,.10),0 1px 1px rgba(0,0,0,.04)}
+
+/* ---------- 地图 ---------- */
+#map{position:absolute;inset:0;background:#e8e8ed}
+.maplibregl-ctrl-attrib,.maplibregl-ctrl-logo{display:none!important}
+
+/* ---------- 图例 ---------- */
+.map-legend{
+  position:fixed;left:16px;bottom:calc(46px + env(safe-area-inset-bottom));z-index:20;
+  background:var(--panel);border:1px solid var(--stroke);
+  border-radius:var(--r-md);padding:10px 14px;
+  box-shadow:var(--shadow-md);
+  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+  min-width:150px;
+}
+.legend-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px}
+.legend-row{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text-3);
+  font-variant-numeric:tabular-nums}
+.dot{width:3px;height:3px;border-radius:50%;background:var(--text-3);opacity:.5}
+
+/* ---------- 控件 ---------- */
+.map-controls{
+  position:fixed;right:16px;bottom:calc(22px + env(safe-area-inset-bottom));z-index:20;
+  display:flex;flex-direction:column;gap:0;
+  background:var(--panel);border:1px solid var(--stroke);
+  border-radius:var(--r-md);box-shadow:var(--shadow-md);overflow:hidden;
+  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+}
+.ctl{
+  width:44px;height:44px;border:0;background:transparent;color:var(--text);
+  display:grid;place-items:center;cursor:pointer;
+  transition:background .16s ease;
+}
+.ctl:hover{background:rgba(0,0,0,.05)}
+.ctl:active{background:rgba(0,0,0,.10)}
+.ctl-sep{height:1px;background:var(--stroke);margin:0 8px}
+#compassIcon{transition:transform .3s var(--ease)}
+
+.attribution{
+  position:fixed;right:16px;bottom:calc(6px + env(safe-area-inset-bottom));
+  z-index:10;font-size:10px;color:var(--text-3);opacity:.75;
+  pointer-events:none;
+}
+
+/* MapLibre 比例尺：移到图例下方并改成本站样式 */
+.maplibregl-ctrl-scale{
+  border:1px solid rgba(0,0,0,.28)!important;
+  border-top:none!important;
+  background:rgba(255,255,255,.55)!important;
+  color:var(--text-2)!important;
+  font-size:10px!important;
+  font-variant-numeric:tabular-nums;
+  line-height:1.1!important;
+  padding:1px 4px!important;
+  margin:0 0 0 16px!important;
+  border-radius:0 0 4px 4px;
+}
+
+/* ---------- 加载遮罩 ---------- */
+.loader{
+  position:fixed;inset:0;z-index:60;display:grid;place-items:center;
+  background:var(--bg);transition:opacity .5s var(--ease),visibility .5s;
+}
+.loader.hidden{opacity:0;visibility:hidden}
+.loader-inner{display:flex;flex-direction:column;align-items:center;gap:14px}
+.spinner{
+  width:26px;height:26px;border-radius:50%;
+  border:2.5px solid rgba(0,0,0,.12);border-top-color:var(--blue);
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-text{font-size:13px;color:var(--text-2);font-weight:500}
+
+@media (max-width:560px){
+  .topbar-right{gap:2px;padding:2px}
+  .pill{font-size:12px;padding:6px 10px}
+  .brand-name{font-size:15px}
+  .map-legend{left:12px;bottom:calc(16px + env(safe-area-inset-bottom));padding:8px 11px;min-width:0}
+  .map-controls{right:12px;bottom:calc(16px + env(safe-area-inset-bottom))}
+  .ctl{width:40px;height:40px}
+  .attribution{display:none}
+}
