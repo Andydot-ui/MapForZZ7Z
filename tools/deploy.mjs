@@ -21,10 +21,13 @@ const args = [
 ];
 
 console.log(`deploying ${WEB} -> ${PROJECT} (${BRANCH})`);
+// 本机 IPv6 出口不通，Node 会优先解析到 AAAA 记录导致 fetch failed；
+// 强制 IPv4 优先，避免部署随机失败。
+const env = { ...process.env, NODE_OPTIONS: '--dns-result-order=ipv4first' };
 const res = spawnSync(process.execPath, args, {
   stdio: 'inherit',
   cwd: WEB,
-  env: process.env,
+  env,
 });
 
 if (res.status !== 0) {
