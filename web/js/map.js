@@ -67,7 +67,7 @@ map.addControl(new maplibregl.ScaleControl({ maxWidth: 120, unit: 'metric' }), '
 map.on('load', () => {
   map.addSource('ortho', {
     type: 'raster',
-    tiles: ['./tiles/{z}/{x}/{y}.webp'],
+    tiles: ['/tiles/{z}/{x}/{y}.webp'],
     tileSize: 256,
     minzoom: ZMIN,
     maxzoom: ZMAX,
@@ -163,7 +163,7 @@ map.once('idle', () => {
       const tx = x + dx, ty = y + dy;
       if (tx < r.x0 || tx > r.x1 || ty < r.y0 || ty > r.y1) continue;
       const img = new Image();
-      img.src = `./tiles/${z}/${tx}/${ty}.webp`;
+      img.src = `/tiles/${z}/${tx}/${ty}.webp`;
     }
   }
 });

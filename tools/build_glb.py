@@ -1,21 +1,23 @@
-﻿"""Shrink the GLB textures for web delivery without touching geometry.
+"""Shrink the GLB textures for web delivery without touching geometry.
 
 Geometry stays Draco-compressed; only the JPEG payloads are replaced by
 downscaled / re-compressed versions, then the buffer is rebuilt.
 """
 import io
 import json
+import os
 import struct
+import sys
 
-import numpy as np
 from PIL import Image
 
-SRC = r"C:\Users\andyd\Downloads\-textured_model.glb"
+Image.MAX_IMAGE_PIXELS = None
+
+SRC = r"C:\Users\andyd\Downloads\三维.glb"
 OUT = r"C:\Users\andyd\Documents\deepseek-harness\default-workspace\MapForZZ7Z\web\models\textured_model.glb"
 
-MAX_TEX = 1024          # cap for the big 8k atlases
-MAX_TEX_SMALL = 1024
-QUALITY = 80
+MAX_TEX = 1024          # 8192² 图集压到 1024²：每块覆盖约 100 m，≈10 cm/px
+QUALITY = 82
 
 
 def read_glb(path):
@@ -45,9 +47,8 @@ def main():
         im = Image.open(io.BytesIO(raw))
         im = im.convert("RGB") if im.mode != "RGB" else im
         w, h = im.size
-        cap = MAX_TEX if max(w, h) > MAX_TEX else MAX_TEX_SMALL
-        if max(w, h) > cap:
-            ratio = cap / max(w, h)
+        if max(w, h) > MAX_TEX:
+            ratio = MAX_TEX / max(w, h)
             nw = max(64, int(round(w * ratio)))
             nh = max(64, int(round(h * ratio)))
             im = im.resize((nw, nh), Image.LANCZOS)
@@ -56,36 +57,30 @@ def main():
         out = buf.getvalue()
         new_images[i] = out
         total_after += len(out)
-        if i % 5 == 0:
-            print(f"  img{i}: {w}x{h} -> {im.size[0]}x{im.size[1]}  {len(raw)/1e6:.2f} -> {len(out)/1e6:.2f} MB", flush=True)
+        if i % 8 == 0 or max(w, h) > 4096:
+            print(f"  img{i}: {w}x{h} -> {im.size[0]}x{im.size[1]}  "
+                  f"{len(raw)/1e6:.2f} -> {len(out)/1e6:.2f} MB", flush=True)
 
     print(f"textures {total_before/1e6:.1f} -> {total_after/1e6:.1f} MB", flush=True)
 
     # --- rebuild buffer, preserving every non-image bufferView byte-for-byte ---
     out_bin = bytearray()
-    new_offsets = {}
-    order = []
-    for i, img in enumerate(gltf["images"]):
-        order.append(("img", i, img["bufferView"]))
     img_bv = {img["bufferView"] for img in gltf["images"]}
+    bv_to_img = {img["bufferView"]: i for i, img in enumerate(gltf["images"])}
 
-    # place all bufferViews in original index order, images use new payload
     for bi, bv in enumerate(gltf["bufferViews"]):
         while len(out_bin) % 4:
             out_bin.append(0)
-        new_offsets[bi] = len(out_bin)
         if bi in img_bv:
-            idx = next(i for i, im in enumerate(gltf["images"]) if im["bufferView"] == bi)
-            payload = new_images[idx]
+            payload = new_images[bv_to_img[bi]]
         else:
             off = bv.get("byteOffset", 0)
             payload = binbuf[off:off + bv["byteLength"]]
-        out_bin.extend(payload)
-        bv["byteOffset"] = new_offsets[bi]
+        bv["byteOffset"] = len(out_bin)
         bv["byteLength"] = len(payload)
+        out_bin.extend(payload)
 
     gltf["buffers"] = [{"byteLength": len(out_bin)}]
-    # drop unused keys that could confuse loaders
     gltf.pop("uri", None)
 
     js = json.dumps(gltf, separators=(",", ":")).encode("utf-8")
@@ -97,6 +92,7 @@ def main():
         binlen += 1
 
     total = 12 + 8 + len(js) + 8 + binlen
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "wb") as f:
         f.write(struct.pack("<III", 0x46546C67, 2, total))
         f.write(struct.pack("<II", len(js), 0x4E4F534A))
@@ -104,9 +100,8 @@ def main():
         f.write(struct.pack("<II", binlen, 0x004E4942))
         f.write(out_bin)
 
-    print(f"GLB: {total/1e6:.1f} MB -> {OUT}", flush=True)
+    print(f"GLB: {total/1e6:.2f} MB -> {OUT}", flush=True)
 
 
 if __name__ == "__main__":
     main()
-

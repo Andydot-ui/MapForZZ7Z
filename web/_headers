@@ -12,6 +12,10 @@
   Cache-Control: public, max-age=31536000, immutable
   Access-Control-Allow-Origin: *
 
+/pointcloud/octree.json
+  Cache-Control: public, max-age=300
+  Access-Control-Allow-Origin: *
+
 /models/*
   Cache-Control: public, max-age=604800
 
@@ -25,6 +29,15 @@
   Cache-Control: public, max-age=300
 
 /
+  Cache-Control: public, max-age=300
+
+/map
+  Cache-Control: public, max-age=300
+
+/3d
+  Cache-Control: public, max-age=300
+
+/map.html
   Cache-Control: public, max-age=300
 
 /3d.html

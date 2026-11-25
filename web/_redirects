@@ -1,0 +1,10 @@
+# 让 /map 与 /3d 指向真实页面文件；Pages 对无扩展名路径默认 404。
+/map      /map.html   200
+/3d       /3d.html    200
+
+# 根路径落到地图页。
+/         /map.html   200
+
+# 旧地址兼容。
+/index.html  /map.html  301
+/3d.html     /3d       301

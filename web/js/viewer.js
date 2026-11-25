@@ -5,7 +5,7 @@
      X = UTM Easting（东）
      Y = UTM Northing（北）
      Z = 高程
-   原点 = CESIUM_RTC 中心 (743487, 3857689, 0)
+   原点 = CESIUM_RTC 中心 (743469, 3857681, 0)
    =========================================================== */
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -13,13 +13,15 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 
 /* ---------- 常量 ---------- */
+// 模型实际覆盖 x[-476..489] y[-554..604]，点云覆盖 x[-470..467] y[-549..549]；
+// 取两者的并集，网格与默认取景都以这块 1.1 km 的地块为准。
 const GROUND = {
-  x0: -289.9076069545699, x1: 275.9959063875722,
-  y0: -302.21506110951304, y1: 289.2352097206749,
+  x0: -476, x1: 489,
+  y0: -554, y1: 604,
 };
-const GROUND_Z = 88.9;                 // 模型地形底部 z≈89.2，影像面略低于此
-const HOME_POS = new THREE.Vector3(430, -430, 470);
-const HOME_TARGET = new THREE.Vector3(0, 0, 108);
+const GROUND_Z = 86.0;                 // 新模型地形底部 z≈86.4，网格略低于此
+const HOME_POS = new THREE.Vector3(560, -700, 620);
+const HOME_TARGET = new THREE.Vector3(0, 0, 110);
 const HOME_DIR = HOME_TARGET.clone().sub(HOME_POS).normalize();
 const HOME_DIST = HOME_TARGET.distanceTo(HOME_POS);
 
@@ -107,11 +109,12 @@ scene.add(rim);
 const gridGroup = new THREE.Group();
 scene.add(gridGroup);
 {
-  const grid = new THREE.GridHelper(704, 88, 0x5a5a6a, 0x32323c);
+  // 10 m 一格，覆盖整块 1.2 km 的场地
+  const grid = new THREE.GridHelper(1200, 120, 0x5a5a6a, 0x32323c);
   grid.rotation.x = Math.PI / 2;      // GridHelper 在 XZ 平面 → 转到 XY
   grid.material.transparent = true;
   grid.material.opacity = 0.42;
-  grid.position.z = GROUND_Z + 0.05;
+  grid.position.set(6.5, 25, GROUND_Z + 0.05);
   gridGroup.add(grid);
 }
 
@@ -131,7 +134,7 @@ const PC = {
   points: 0,
   size: 1.6,
   lodErrorPx: 2.0,           // 目标点间距（像素）
-  budget: 2600000,           // 同屏点云点预算，超出则停止细分
+  budget: 3000000,           // 同屏点云点预算，超出则停止细分
 };
 
 const pointVS = /* glsl */`
@@ -179,7 +182,7 @@ function makePointMaterial(bbox) {
       uPixelRatio: { value: Math.min(devicePixelRatio, 2) },
       uFogNear: { value: 950 },
       uFogFar: { value: 2100 },
-      uFogColor: { value: new THREE.Color('#0b0b0d') },
+      uFogColor: { value: new THREE.Color(FOG_COLOR) },
     },
     vertexShader: pointVS,
     fragmentShader: pointFS,
@@ -190,7 +193,7 @@ function makePointMaterial(bbox) {
 }
 
 async function loadCloudMeta() {
-  const res = await fetch('./pointcloud/octree.json');
+  const res = await fetch('/pointcloud/octree.json');
   PC.meta = await res.json();
   PC.nodeCount = Object.keys(PC.meta.nodes).length;
   PC.ready = true;
@@ -204,7 +207,7 @@ async function loadNode(id) {
   PC.queued.add(id);
   PC.inflight++;
   try {
-    const res = await fetch(`./pointcloud/n/${id}.bin`);
+    const res = await fetch(`/pointcloud/n/${id}.bin`);
     if (!res.ok) throw new Error(res.status);
     const buf = await res.arrayBuffer();
     const count = new DataView(buf).getUint32(0, true);
@@ -378,7 +381,7 @@ scene.add(modelGroup);
 let triangleCount = 0;
 
 const draco = new DRACOLoader();
-draco.setDecoderPath('./vendor/draco/');
+draco.setDecoderPath('/vendor/draco/');
 draco.setDecoderConfig({ type: 'wasm' });
 
 const gltfLoader = new GLTFLoader();
@@ -407,7 +410,7 @@ function maybeHideLoader() {
 }
 
 gltfLoader.load(
-  './models/textured_model.glb',
+  '/models/textured_model.glb',
   (gltf) => {
     gltf.scene.traverse((o) => {
       if (!o.isMesh) return;
