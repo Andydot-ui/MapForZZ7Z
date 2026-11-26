@@ -11,13 +11,15 @@ const ROOT = process.argv[2]
   : path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'web');
 const PORT = Number(process.argv[3] || 8787);
 
-// Same table as _redirects: pathname -> [target, status]
+// Same table as _redirects. Cloudflare Pages serves map.html at /map through
+// clean-URL normalisation, so /map must NOT rewrite to /map.html (that loops).
 const ROUTES = {
-  '/': ['/map.html', 200],
+  '/': ['/map', 302],
   '/map': ['/map.html', 200],
   '/3d': ['/3d.html', 200],
-  '/index.html': ['/map.html', 301],
-  '/3d.html': ['/3d', 301],
+  '/map.html': ['/map.html', 200],
+  '/3d.html': ['/3d.html', 200],
+  '/index.html': ['/map', 301],
 };
 
 const MIME = {

@@ -1,10 +1,6 @@
-# 让 /map 与 /3d 指向真实页面文件；Pages 对无扩展名路径默认 404。
-/map      /map.html   200
-/3d       /3d.html    200
+# Cloudflare Pages 的 clean URL 会把 map.html 自动规范化到 /map（308），
+# 因此这里不能再写 /map -> /map.html 的改写，否则两者会互相跳转成死循环。
+# 页面本身已经由 Pages 直接服务在 /map 与 /3d，这里只补根路径与旧地址。
 
-# 根路径落到地图页。
-/         /map.html   200
-
-# 旧地址兼容。
-/index.html  /map.html  301
-/3d.html     /3d       301
+/            /map   302
+/index.html  /map   301
