@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MapForZZ7Z · 一座校园，两个视角</title>
+<meta name="description" content="正射影像、实景三维模型与激光点云，共用同一套坐标系。0.05 米影像分辨率，34,316,746 个激光点。">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta property="og:title" content="MapForZZ7Z · 一座校园，两个视角">
+<meta property="og:description" content="正射影像、实景三维模型与激光点云，共用同一套坐标系。">
+<meta property="og:image" content="img/hero-3d.jpg">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/site.css">
+<script>
+/* 先标上「脚本可用」，CSS 才把内容藏起来等入场动画，避免闪一下。
+   2.5 秒内 site.js 没接手（被拦截/报错），就把标记摘掉，内容照常显示。 */
+(function () {
+  var d = document.documentElement;
+  d.classList.add('js');
+  setTimeout(function () {
+    if (!d.dataset.animReady) d.classList.remove('js');
+  }, 2500);
+})();
+</script>
+</head>
+<body>
+
+<div class="scroll-progress" id="progress" aria-hidden="true"></div>
+
+<!-- ============ 导航 ============ -->
+<nav class="gn" id="gn">
+  <div class="gn-inner">
+    <a class="gn-brand" href="#top">
+      <span class="gn-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+          <path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/>
+          <path d="M9 4v13.5M15 6.5V20"/>
+        </svg>
+      </span>
+      <span class="gn-name">MapForZZ7Z</span>
+    </a>
+    <div class="gn-links">
+      <a href="#overview">概览</a>
+      <a href="#layers">数据</a>
+      <a href="#process">流程</a>
+      <a href="#map">地图</a>
+      <a href="#three">三维</a>
+      <a href="#perf">性能</a>
+      <a href="#geo">坐标</a>
+      <a href="#crosscheck">校验</a>
+      <a href="#specs">规格</a>
+      <a href="#faq">问答</a>
+    </div>
+    <a class="gn-cta" href="https://andydot.dpdns.org/map">打开地图</a>
+  </div>
+</nav>
+
+<main id="top">
+
+<!-- ============ 主视觉 ============ -->
+<section class="hero">
+  <div class="hero-copy reveal">
+    <p class="eyebrow">MapForZZ7Z</p>
+    <h1>一座校园<br><span class="grad">两个视角</span>。</h1>
+    <p class="sub">正射影像与实景三维，共用同一套坐标系。<br>平面看得清，立体走得进。</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="https://andydot.dpdns.org/map">打开地图</a>
+      <a class="btn btn-ghost" href="https://andydot.dpdns.org/3d">浏览三维 <span class="chev">›</span></a>
+    </div>
+  </div>
+
+  <div class="hero-shot reveal">
+    <div class="shot-frame">
+      <img src="img/hero-3d.jpg" width="1761" height="991" alt="校园实景三维模型俯瞰" fetchpriority="high">
+    </div>
+    <p class="shot-cap">329,051 个三角面 · 2,852,224 个点 · 实时渲染</p>
+  </div>
+</section>
+
+<!-- ============ 陈述 ============ -->
+<section class="statement" id="overview">
+  <div class="wrap">
+    <p class="big reveal">
+      从 5 厘米的影像，<br>到 34,316,746 个激光点。
+    </p>
+    <p class="lede reveal">
+      同一片校园，被记录了三次：一次用相机，一次用倾斜摄影，一次用激光雷达。
+      三种数据在同一个 UTM 坐标系里对齐，误差不到一个像素。
+    </p>
+  </div>
+</section>
+
+<!-- ============ 三层数据 ============ -->
+<section class="layers" id="layers">
+  <div class="wrap">
+    <div class="layers-head reveal">
+      <p class="kicker">三层数据</p>
+      <h2>同一片校园，<br>三种记录方式。</h2>
+      <p class="lede">正射影像负责「看得清」，实景模型负责「走得进」，点云负责「量得准」。
+        三层叠在同一套坐标上，各管一段。</p>
+    </div>
+
+    <div class="layer-grid">
+      <article class="layer-card reveal reveal-zoom">
+        <div class="layer-img">
+          <img src="img/layer-ortho.jpg" width="1000" height="1000" loading="lazy" alt="校园正射影像，可见体育场与教学楼">
+        </div>
+        <div class="layer-body">
+          <span class="layer-tag">第一层</span>
+          <h3>正射影像</h3>
+          <p>垂直俯拍后做过正射纠正，每一像素对应地面 5 厘米。看平面关系、量距离，都以它为准。</p>
+          <p class="layer-meta"><span>分辨率<b>0.05 m</b></span><span>尺寸<b>11,319 × 11,830</b></span></p>
+        </div>
+      </article>
+
+      <article class="layer-card reveal reveal-zoom">
+        <div class="layer-img">
+          <img src="img/layer-mesh.jpg" width="1000" height="1000" loading="lazy" alt="校园实景三维网格模型，含建筑立面与地形">
+        </div>
+        <div class="layer-body">
+          <span class="layer-tag">第二层</span>
+          <h3>实景模型</h3>
+          <p>倾斜摄影生成的带纹理网格，楼顶、立面、树冠都有形。可以绕到背面，也可以贴地看。</p>
+          <p class="layer-meta"><span>三角面<b>329,051</b></span><span>体积<b>19.3 MB</b></span></p>
+        </div>
+      </article>
+
+      <article class="layer-card reveal reveal-zoom">
+        <div class="layer-img">
+          <img src="img/layer-points.jpg" width="1000" height="1000" loading="lazy" alt="校园激光点云，按高程与反射率着色">
+        </div>
+        <div class="layer-body">
+          <span class="layer-tag">第三层</span>
+          <h3>激光点云</h3>
+          <p>激光雷达逐点测距，屋脊、树线、地面的真实高程都在里面。用来校验模型，也用来算高度。</p>
+          <p class="layer-meta"><span>原始点数<b>34.3 M</b></span><span>渲染点数<b>2.85 M</b></span></p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 制作流程 ============ -->
+<section class="process" id="process">
+  <div class="wrap">
+    <div class="process-head">
+      <p class="kicker reveal">制作流程</p>
+      <h2 class="split-head" data-split>从一趟采集，<br>到一次漫游。</h2>
+      <p class="lede reveal">四种手段接力，把同一片校园一层层剥出来。数据在流程里逐步变小，精度却不丢。</p>
+    </div>
+
+    <ol class="tl">
+      <li class="tl-item" style="--td:0ms">
+        <span class="tl-rail" aria-hidden="true"></span>
+        <span class="tl-dot" aria-hidden="true"></span>
+        <div class="tl-body">
+          <div class="tl-top">
+            <span class="tl-ico" aria-hidden="true">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="18" y="18" width="12" height="12" rx="2.5"/>
+                <path d="M18.5 22 10.5 16M29.5 22l8-6M18.5 26l-8 6M29.5 26l8 6"/>
+                <circle cx="9" cy="14" r="3.4"/><circle cx="39" cy="14" r="3.4"/>
+                <circle cx="9" cy="34" r="3.4"/><circle cx="39" cy="34" r="3.4"/>
+              </svg>
+            </span>
+            <span class="tl-step">第 01 步 · 采集</span>
+          </div>
+          <h3>航拍与地面扫描，一次跑完</h3>
+          <p>无人机沿航线掠过校园，相机按固定角度连拍；激光雷达同时在地面逐点扫描，
+            把屋脊、树线与地面的真实高程一并记下。两种记录共用同一片范围。</p>
+          <p class="tl-metric"><b>约 566 × 591 米</b><span>单次采集覆盖范围</span></p>
+        </div>
+      </li>
+
+      <li class="tl-item">
+        <span class="tl-rail" aria-hidden="true"></span>
+        <span class="tl-dot" aria-hidden="true"></span>
+        <div class="tl-body">
+          <div class="tl-top">
+            <span class="tl-ico" aria-hidden="true">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="30" height="30" rx="2"/>
+                <path d="M19 9v30M29 9v30M9 19h30M9 29h30"/>
+              </svg>
+            </span>
+            <span class="tl-step">第 02 步 · 纠正与切片</span>
+          </div>
+          <h3>正射纠正，然后切成瓦片</h3>
+          <p>输出.tif 是一张 GeoTIFF：EPSG:32649、11,319 × 11,830 像素、0.05 米一像素。
+            纠正后重投影并按瓦片网格对齐切片，相邻瓦片之间不留透明接缝。</p>
+          <p class="tl-metric"><b><span data-count="2374">2,374</span> 张 WebP 瓦片</b><span>15–21 级 · 256 像素</span></p>
+        </div>
+      </li>
+
+      <li class="tl-item">
+        <span class="tl-rail" aria-hidden="true"></span>
+        <span class="tl-dot" aria-hidden="true"></span>
+        <div class="tl-body">
+          <div class="tl-top">
+            <span class="tl-ico" aria-hidden="true">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M24 7 41 16.5v15L24 41 7 31.5v-15z"/>
+                <path d="M7 16.5 24 26l17-9.5M24 26v15"/>
+              </svg>
+            </span>
+            <span class="tl-step">第 03 步 · 建模</span>
+          </div>
+          <h3>倾斜摄影，生成带纹理的网格</h3>
+          <p>倾斜摄影成果织成实景网格，输出 glTF 2.0 + Draco + CESIUM_RTC。
+            几何交给 Draco 量化压缩，79 张贴图压到 1024 px，纹理和轮廓都还在。</p>
+          <p class="tl-metric"><b><span data-count="329051">329,051</span> 个三角面</b><span>三维.glb · 19.3 MB</span></p>
+        </div>
+      </li>
+
+      <li class="tl-item">
+        <span class="tl-dot" aria-hidden="true"></span>
+        <div class="tl-body">
+          <div class="tl-top">
+            <span class="tl-ico" aria-hidden="true">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="7" y="7" width="34" height="34" rx="2.5" stroke-dasharray="3 3" opacity=".55"/>
+                <circle cx="14" cy="17" r="2"/><circle cx="24" cy="12" r="2"/><circle cx="34" cy="18" r="2"/>
+                <circle cx="18" cy="28" r="2"/><circle cx="29" cy="25" r="2"/><circle cx="37" cy="31" r="2"/>
+                <circle cx="12" cy="35" r="2"/><circle cx="25" cy="36" r="2"/>
+              </svg>
+            </span>
+            <span class="tl-step">第 04 步 · 配准与发布</span>
+          </div>
+          <h3>点云配准，按节点摊开</h3>
+          <p>三维.laz 是 LAS 1.4、点格式 7 的点云，切成八叉树 LOD 节点。
+            与模型共用同一个 RTC 原点，按屏幕误差和点数预算逐级加载，谁也不用等谁。</p>
+          <p class="tl-metric"><b><span data-count="34316746">34,316,746</span> 个原始点</b><span>214 个 LOD 节点 · 60 fps</span></p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ 地图 ============ -->
+<section class="feature" id="map">
+  <div class="wrap">
+    <div class="feature-head reveal">
+      <p class="kicker">地图</p>
+      <h2>放大到看清<br>每一块地砖。</h2>
+      <p class="lede">整幅正射影像按 15–21 级切成 2,374 张瓦片，WebP 压缩，按需加载。
+        默认视图自动贴合窗口大小，深色模式下边缘与界面同步。</p>
+      <ul class="facts">
+        <li><b>0.05 m</b><span>原始影像分辨率</span></li>
+        <li><b>21 级</b><span>最细瓦片层级</span></li>
+        <li><b>2,374</b><span>张瓦片</span></li>
+      </ul>
+    </div>
+    <div class="shot reveal">
+      <picture>
+        <source srcset="img/ui-map-dark.jpg" media="(prefers-color-scheme: dark)">
+        <img src="img/ui-map.jpg" width="1700" height="1062" loading="lazy" alt="地图页面，浅色模式下的校园正射影像">
+      </picture>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 三维 ============ -->
+<section class="feature dark" id="three">
+  <div class="wrap">
+    <div class="feature-head reveal">
+      <p class="kicker">三维</p>
+      <h2>走进去，<br>而不只是看一眼。</h2>
+      <p class="lede">Draco 把 366 MB 的模型压到 19 MB；八叉树 LOD 让 285 万点的点云在 60 fps 下自由漫游。
+        模型、点云、线框与 10 米地面网格，可以任意组合。</p>
+      <ul class="facts">
+        <li><b>19 MB</b><span>模型体积（原 366 MB）</span></li>
+        <li><b>214</b><span>点云 LOD 节点</span></li>
+        <li><b>60 fps</b><span>实时帧率</span></li>
+      </ul>
+    </div>
+    <div class="shot reveal">
+      <img src="img/ui-3d.jpg" width="1700" height="1062" loading="lazy" alt="三维页面，模型与点云叠加显示">
+    </div>
+  </div>
+</section>
+
+<!-- ============ 性能与工程 ============ -->
+<section class="perf" id="perf">
+  <div class="wrap">
+    <div class="perf-head reveal">
+      <p class="kicker">为浏览器而瘦身</p>
+      <h2>原始数据太大，<br>浏览器吃不消。</h2>
+      <p class="lede">正片 351 MB 的影像、366 MB 的模型，直接丢给浏览器是加载不出画的。
+        真正的工程量在中间那一段：换格式、压几何、切层级、按需拿。</p>
+    </div>
+
+    <div class="bars">
+      <div class="bar-row">
+        <div class="bar-head">
+          <span class="bar-name">正射影像</span>
+          <span class="bar-out">351 MB → <b>21.9 MB</b></span>
+        </div>
+        <div class="bar-scale">
+          <span class="bar-label">压缩前</span>
+          <div class="bar-track"><span class="bar-fill bar-before" style="--w:100%"></span></div>
+          <span class="bar-label">压缩后</span>
+          <div class="bar-track"><span class="bar-fill bar-after" style="--w:6.2%"></span></div>
+        </div>
+        <p class="bar-note">重投影到 EPSG:3857，按瓦片网格对齐切片，WebP q82 编码。2,374 张瓦片只在你走到那一级时才去取。</p>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-head">
+          <span class="bar-name">实景三维模型</span>
+          <span class="bar-out">366 MB → <b>19.3 MB</b></span>
+        </div>
+        <div class="bar-scale">
+          <span class="bar-label">压缩前</span>
+          <div class="bar-track"><span class="bar-fill bar-before" style="--w:100%"></span></div>
+          <span class="bar-label">压缩后</span>
+          <div class="bar-track"><span class="bar-fill bar-after" style="--w:5.3%"></span></div>
+        </div>
+        <p class="bar-note">Draco 量化压缩几何，79 张贴图统一压到 1024 px。三角面一个没删，只是换成更省的写法。</p>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-head">
+          <span class="bar-name">激光点云</span>
+          <span class="bar-out">34,316,746 点 → <b>2,852,224 点</b></span>
+        </div>
+        <div class="bar-scale">
+          <span class="bar-label">全部点</span>
+          <div class="bar-track"><span class="bar-fill bar-before bar-laz" style="--w:100%"></span></div>
+          <span class="bar-label">渲染点</span>
+          <div class="bar-track"><span class="bar-fill bar-after bar-laz" style="--w:8.3%"></span></div>
+        </div>
+        <p class="bar-note">切进 214 个八叉树 LOD 节点，节点内坐标量化成 uint16（9 字节/点）。原始点一点不丢，只是不全搬上显卡——单节点最大 0.51 MB，都小于 Cloudflare Pages 的 25 MiB 限制。</p>
+      </div>
+    </div>
+
+    <ul class="perf-facts">
+      <li class="tilt"><b>60 fps</b><span class="plabel">目标帧率</span></li>
+      <li class="tilt"><b><span data-count="2852224">2,852,224</span></b><span class="plabel">屏幕上的点数</span></li>
+      <li class="tilt"><b><span data-count="300">300</span><i class="unit">万点</i></b><span class="plabel">单帧加载预算</span></li>
+      <li class="tilt"><b><span data-count="214">214</span><i class="unit">节点</i></b><span class="plabel">点云 LOD 树</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ 数据带 ============ -->
+<section class="stats">
+  <div class="wrap">
+    <h2 class="stats-title reveal">三次采集，<br>一套坐标。</h2>
+    <div class="stat-grid">
+      <div class="stat reveal"><b data-count="0.05" data-dec="2">0.05</b><span>米 / 像素</span><em>正射影像</em></div>
+      <div class="stat reveal wide"><b>11,319<span class="times-x">×</span>11,830</b><span>像素</span><em>影像尺寸</em></div>
+      <div class="stat reveal"><b><span data-count="34.3" data-dec="1">34.3</span><span class="times">M</span></b><span>个点</span><em>原始激光点云</em></div>
+      <div class="stat reveal"><b><span data-count="329051">329,051</span></b><span>个面</span><em>模型三角面</em></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 双视图 ============ -->
+<section class="duo">
+  <div class="wrap">
+    <div class="feature-head reveal">
+      <p class="kicker">视角对照</p>
+      <h2>俯视与平面，<br>看的是同一处。</h2>
+      <p class="lede">左边是三维模型的俯视角度，右边是地图页的深色界面。
+        两边的体育场、主楼、操场落在同样的相对位置。</p>
+    </div>
+    <div class="duo-grid">
+      <div class="duo-item reveal">
+        <img src="img/hero-3d-top.jpg" width="1205" height="904" loading="lazy" alt="俯视视角下的校园三维模型">
+        <p class="duo-cap">俯视 · 三维模型</p>
+      </div>
+      <div class="duo-item reveal">
+        <img src="img/ui-map-dark.jpg" width="1700" height="1062" loading="lazy" alt="深色模式下的地图页面">
+        <p class="duo-cap">平面 · 深色模式</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 坐标系 ============ -->
+<section class="geo" id="geo">
+  <div class="wrap geo-inner">
+    <div class="geo-copy reveal reveal-x">
+      <p class="kicker">同一坐标</p>
+      <h2>三种数据，<br>一个原点。</h2>
+      <p class="lede">影像用 UTM 49N 的绝对坐标；模型与点云把原点搬到校园中心，
+        用相对坐标省掉百万级的数值位。换算只差一次平移。</p>
+      <ul class="geo-list">
+        <li><span class="k">投影</span><span class="v">WGS 84 / UTM zone 49N</span></li>
+        <li><span class="k">RTC 中心</span><span class="v">743,469 · 3,857,681 · 0</span></li>
+        <li><span class="k">场景朝向</span><span class="v">+X 东 · +Y 北 · +Z 高程</span></li>
+        <li><span class="k">覆盖范围</span><span class="v">约 566 × 591 米</span></li>
+      </ul>
+    </div>
+
+    <div class="geo-axes reveal" aria-hidden="true">
+      <svg viewBox="0 0 320 320" fill="none">
+        <!-- 地面网格：等轴测椭圆，暗示水平面 -->
+        <g class="geo-grid" stroke="rgba(255,255,255,.10)" stroke-width="1">
+          <ellipse cx="160" cy="214" rx="118" ry="62"/>
+          <ellipse cx="160" cy="214" rx="88" ry="46"/>
+          <ellipse cx="160" cy="214" rx="58" ry="30"/>
+          <ellipse cx="160" cy="214" rx="28" ry="14"/>
+          <line x1="42" y1="214" x2="278" y2="214"/>
+          <line x1="160" y1="152" x2="160" y2="276"/>
+        </g>
+
+        <!-- 三根轴 -->
+        <path class="ax ax-z" pathLength="100" d="M160 214 L160 56" stroke="#bf5af2"/>
+        <path class="ax ax-x" pathLength="100" d="M160 214 L272 273" stroke="#0a84ff"/>
+        <path class="ax ax-y" pathLength="100" d="M160 214 L48 273" stroke="#5e5ce6"/>
+
+        <!-- 轴端箭头 -->
+        <g stroke-width="2" stroke-linecap="round">
+          <path d="M154 66 L160 54 L166 66" stroke="#bf5af2"/>
+          <path d="M262 267 L274 274 L262 279" stroke="#0a84ff"/>
+          <path d="M58 267 L46 274 L58 279" stroke="#5e5ce6"/>
+        </g>
+
+        <!-- 原点 -->
+        <circle class="origin" cx="160" cy="214" r="4.5" fill="#0a84ff"/>
+
+        <text class="ax-label" x="160" y="38" fill="#bf5af2" text-anchor="middle">+Z 高程</text>
+        <text class="ax-label" x="288" y="286" fill="#0a84ff" text-anchor="start">+X 东</text>
+        <text class="ax-label" x="32" y="286" fill="#5e5ce6" text-anchor="end">+Y 北</text>
+        <text class="ax-sub" x="160" y="316" fill="rgba(255,255,255,.42)" text-anchor="middle">RTC 原点 · 743,469 / 3,857,681</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 三层互校 ============ -->
+<section class="crosscheck" id="crosscheck">
+  <div class="wrap">
+    <div class="cross-head reveal">
+      <p class="kicker">互相校验</p>
+      <h2>三种数据，<br>彼此作对方的证据。</h2>
+      <p class="lede">同一片校园被记录了三次。任何一次记错了，另外两次都会把它指出来——这才是三层叠在一起的意义。</p>
+    </div>
+
+    <div class="cross-grid">
+      <article class="cross-card tilt">
+        <span class="cross-tag">影像 × 点云</span>
+        <h3>平面轮廓对不对</h3>
+        <p>影像给的是像素，激光点给的是真实表面。屋脊在影像上是一条边，在点云里是一串高点；
+          两边一对，地物的位置有没有漂就藏不住。</p>
+        <p class="cross-meta"><b>0.05 m</b><span>影像分辨率</span><b>34,316,746</b><span>激光点</span></p>
+      </article>
+
+      <article class="cross-card tilt">
+        <span class="cross-tag">模型 × 点云</span>
+        <h3>高度准不准</h3>
+        <p>倾斜摄影的网格靠纹理补细节，激光雷达只管距离。把模型顶点投到点云上比一遍，
+          楼顶的高度、树冠的起伏，差多少就是差多少。</p>
+        <p class="cross-meta"><b>329,051</b><span>模型三角面</span><b>3,857,681</b><span>RTC 中心 N</span></p>
+      </article>
+
+      <article class="cross-card tilt">
+        <span class="cross-tag">影像 × 模型</span>
+        <h3>地面平不平</h3>
+        <p>模型立起来之后，地面是不是和影像里那条路齐平？俯视时两种数据的正射投影能对齐，
+          说明模型没有整体抬升或下沉。</p>
+        <p class="cross-meta"><b>EPSG:32649</b><span>影像投影</span><b>743,469</b><span>RTC 中心 E</span></p>
+      </article>
+    </div>
+
+    <p class="cross-note reveal">
+      三个环节都落在同一套坐标上：影像用 UTM 49N 的绝对坐标，模型与点云把原点搬到校园中心，
+      换算只差一次平移，误差不到一个像素。
+    </p>
+  </div>
+</section>
+
+<!-- ============ 规格 ============ -->
+<section class="specs" id="specs">
+  <div class="wrap">
+    <h2 class="reveal">技术规格</h2>
+    <div class="spec-rows">
+      <div class="spec-row reveal">
+        <h3>数据来源</h3>
+        <dl>
+          <dt>正射影像</dt><dd>无人机正射拼接，GeoTIFF · EPSG:32649</dd>
+          <dt>三维模型</dt><dd>倾斜摄影实景建模，glTF 2.0 · Draco 压缩</dd>
+          <dt>点云</dt><dd>激光雷达扫描，LAS 1.4 · 点格式 7</dd>
+        </dl>
+      </div>
+      <div class="spec-row reveal">
+        <h3>影像</h3>
+        <dl>
+          <dt>尺寸</dt><dd>11,319 × 11,830 像素</dd>
+          <dt>地面分辨率</dt><dd>约 0.05 米 / 像素</dd>
+          <dt>覆盖范围</dt><dd>约 566 × 591 米</dd>
+          <dt>瓦片</dt><dd>15–21 级，256 像素，WebP</dd>
+        </dl>
+      </div>
+      <div class="spec-row reveal">
+        <h3>三维</h3>
+        <dl>
+          <dt>三角面</dt><dd>329,051 个</dd>
+          <dt>模型体积</dt><dd>19.3 MB（压缩前 366 MB）</dd>
+          <dt>点云</dt><dd>2,852,224 点 · 214 个 LOD 节点</dd>
+          <dt>渲染</dt><dd>Three.js · WebGL · 300 万点预算</dd>
+        </dl>
+      </div>
+      <div class="spec-row reveal">
+        <h3>坐标系</h3>
+        <dl>
+          <dt>投影</dt><dd>WGS 84 / UTM zone 49N</dd>
+          <dt>原点</dt><dd>743,469 / 3,857,681（RTC 中心）</dd>
+          <dt>场景朝向</dt><dd>+X 东，+Y 北，+Z 高程</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 常见问题 ============ -->
+<section class="faq" id="faq">
+  <div class="wrap">
+    <div class="faq-head reveal">
+      <p class="kicker">常见问题</p>
+      <h2>还有些事，<br>先说清楚。</h2>
+    </div>
+
+    <div class="faq-list reveal">
+      <details class="faq-item">
+        <summary><span>数据精度是怎么来的？</span><i aria-hidden="true"></i></summary>
+        <div class="faq-body">
+          <p>正射影像经过正射纠正，每一像素对应地面 5 厘米，覆盖约 566 × 591 米；
+            激光点云是逐点测距的结果，34,316,746 个点各自带独立的 XYZ。
+            两者都落在 WGS 84 / UTM zone 49N 里，模型与点云再共用 RTC 中心 743,469 / 3,857,681 / 0。</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>点云为什么只剩 285 万点？</span><i aria-hidden="true"></i></summary>
+        <div class="faq-body">
+          <p>原始点云一个点都没删，仍是 34,316,746 个点，存在三维.laz 里。
+            浏览器里渲染的是其中的 2,852,224 点——按屏幕误差 2 像素和 300 万点预算流式加载，
+            远处抽稀、近处补齐，八叉树 214 个节点各管一段。</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>模型面数这么少，会不会太糙？</span><i aria-hidden="true"></i></summary>
+        <div class="faq-body">
+          <p>329,051 个三角面是一整座校园。建筑立面、屋顶轮廓、地面起伏都在，
+            细节由 79 张压到 1024 px 的贴图补足；压缩换来的 19.3 MB 换来的是打开即看，
+            而不是转圈。真实点云可以随时叠加上去做对照。</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>地图和三维怎么对齐？</span><i aria-hidden="true"></i></summary>
+        <div class="faq-body">
+          <p>影像瓦片按 EPSG:3857 重投影并对齐瓦片网格，相邻瓦片之间不留透明接缝；
+            三维场景以 RTC 中心为局部原点，+X 东、+Y 北、+Z 高程。
+            地图页和三维页各自独立加载，坐标系却指向同一处地面。</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>深色模式怎么切？</span><i aria-hidden="true"></i></summary>
+        <div class="faq-body">
+          <p>两套页面都跟随系统的 prefers-color-scheme：介绍页、地图界面、比例尺与控件同步切换，
+            不会一边亮一边暗。本页在深色下也读得清，正文对比度保持不变。</p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>这套东西跑在哪？</span><i aria-hidden="true"></i></summary>
+        <div class="faq-body">
+          <p>地图页与三维页部署在 Cloudflare Pages（<code>/map</code> 与 <code>/3d</code>），
+            介绍页单独放在 GitHub Pages，互不干扰。所有单文件都小于 Cloudflare Pages 的 25 MiB 限制，
+            点云最大单节点 0.51 MB。</p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 结尾 ============ -->
+<section class="closing">
+  <div class="wrap">
+    <h2 class="reveal">现在，去看一眼。</h2>
+    <div class="cta-row center reveal">
+      <a class="btn btn-primary" href="https://andydot.dpdns.org/map">打开地图</a>
+      <a class="btn btn-ghost" href="https://andydot.dpdns.org/3d">浏览三维 <span class="chev">›</span></a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap foot-inner">
+    <div class="foot-brand">
+      <span class="gn-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+          <path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/>
+          <path d="M9 4v13.5M15 6.5V20"/>
+        </svg>
+      </span>
+      MapForZZ7Z
+    </div>
+    <div class="foot-links">
+      <a href="https://andydot.dpdns.org/map">地图</a>
+      <a href="https://andydot.dpdns.org/3d">三维</a>
+      <a href="https://github.com/Andydot-ui/MapForZZ7Z">GitHub</a>
+    </div>
+    <p class="foot-note">数据为项目测绘成果，仅用于展示。影像与模型版权归原采集方所有。</p>
+  </div>
+</footer>
+
+<script src="js/site.js" defer></script>
+</body>
+</html>
