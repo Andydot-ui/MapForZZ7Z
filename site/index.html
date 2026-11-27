@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MapForZZ7Z · 一座校园，两个视角</title>
+<meta name="description" content="正射影像、实景三维模型与激光点云，共用同一套坐标系。0.05 米影像分辨率，34,316,746 个激光点。">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta property="og:title" content="MapForZZ7Z · 一座校园，两个视角">
+<meta property="og:description" content="正射影像、实景三维模型与激光点云，共用同一套坐标系。">
+<meta property="og:image" content="img/hero-3d.jpg">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+
+<div class="scroll-progress" id="progress" aria-hidden="true"></div>
+
+<!-- ============ 导航 ============ -->
+<nav class="gn" id="gn">
+  <div class="gn-inner">
+    <a class="gn-brand" href="#top">
+      <span class="gn-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+          <path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/>
+          <path d="M9 4v13.5M15 6.5V20"/>
+        </svg>
+      </span>
+      <span class="gn-name">MapForZZ7Z</span>
+    </a>
+    <div class="gn-links">
+      <a href="#overview">概览</a>
+      <a href="#layers">数据</a>
+      <a href="#map">地图</a>
+      <a href="#three">三维</a>
+      <a href="#geo">坐标</a>
+      <a href="#specs">规格</a>
+    </div>
+    <a class="gn-cta" href="https://andydot.dpdns.org/map">打开地图</a>
+  </div>
+</nav>
+
+<main id="top">
+
+<!-- ============ 主视觉 ============ -->
+<section class="hero">
+  <div class="hero-copy reveal">
+    <p class="eyebrow">MapForZZ7Z</p>
+    <h1>一座校园<br><span class="grad">两个视角</span>。</h1>
+    <p class="sub">正射影像与实景三维，共用同一套坐标系。<br>平面看得清，立体走得进。</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="https://andydot.dpdns.org/map">打开地图</a>
+      <a class="btn btn-ghost" href="https://andydot.dpdns.org/3d">浏览三维 <span class="chev">›</span></a>
+    </div>
+  </div>
+
+  <div class="hero-shot reveal">
+    <div class="shot-frame">
+      <img src="img/hero-3d.jpg" width="1761" height="991" alt="校园实景三维模型俯瞰" fetchpriority="high">
+    </div>
+    <p class="shot-cap">329,051 个三角面 · 2,852,224 个点 · 实时渲染</p>
+  </div>
+</section>
+
+<!-- ============ 陈述 ============ -->
+<section class="statement" id="overview">
+  <div class="wrap">
+    <p class="big reveal">
+      从 5 厘米的影像，<br>到 34,316,746 个激光点。
+    </p>
+    <p class="lede reveal">
+      同一片校园，被记录了三次：一次用相机，一次用倾斜摄影，一次用激光雷达。
+      三种数据在同一个 UTM 坐标系里对齐，误差不到一个像素。
+    </p>
+  </div>
+</section>
+
+<!-- ============ 三层数据 ============ -->
+<section class="layers" id="layers">
+  <div class="wrap">
+    <div class="layers-head reveal">
+      <p class="kicker">三层数据</p>
+      <h2>同一片校园，<br>三种记录方式。</h2>
+      <p class="lede">正射影像负责「看得清」，实景模型负责「走得进」，点云负责「量得准」。
+        三层叠在同一套坐标上，各管一段。</p>
+    </div>
+
+    <div class="layer-grid">
+      <article class="layer-card reveal reveal-zoom">
+        <div class="layer-img">
+          <img src="img/layer-ortho.jpg" width="1000" height="1000" loading="lazy" alt="校园正射影像，可见体育场与教学楼">
+        </div>
+        <div class="layer-body">
+          <span class="layer-tag">第一层</span>
+          <h3>正射影像</h3>
+          <p>垂直俯拍后做过正射纠正，每一像素对应地面 5 厘米。看平面关系、量距离，都以它为准。</p>
+          <p class="layer-meta"><span>分辨率<b>0.05 m</b></span><span>尺寸<b>11,319 × 11,830</b></span></p>
+        </div>
+      </article>
+
+      <article class="layer-card reveal reveal-zoom">
+        <div class="layer-img">
+          <img src="img/layer-mesh.jpg" width="1000" height="1000" loading="lazy" alt="校园实景三维网格模型，含建筑立面与地形">
+        </div>
+        <div class="layer-body">
+          <span class="layer-tag">第二层</span>
+          <h3>实景模型</h3>
+          <p>倾斜摄影生成的带纹理网格，楼顶、立面、树冠都有形。可以绕到背面，也可以贴地看。</p>
+          <p class="layer-meta"><span>三角面<b>329,051</b></span><span>体积<b>19.3 MB</b></span></p>
+        </div>
+      </article>
+
+      <article class="layer-card reveal reveal-zoom">
+        <div class="layer-img">
+          <img src="img/layer-points.jpg" width="1000" height="1000" loading="lazy" alt="校园激光点云，按高程与反射率着色">
+        </div>
+        <div class="layer-body">
+          <span class="layer-tag">第三层</span>
+          <h3>激光点云</h3>
+          <p>激光雷达逐点测距，屋脊、树线、地面的真实高程都在里面。用来校验模型，也用来算高度。</p>
+          <p class="layer-meta"><span>原始点数<b>34.3 M</b></span><span>渲染点数<b>2.85 M</b></span></p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 地图 ============ -->
+<section class="feature" id="map">
+  <div class="wrap">
+    <div class="feature-head reveal">
+      <p class="kicker">地图</p>
+      <h2>放大到看清<br>每一块地砖。</h2>
+      <p class="lede">整幅正射影像按 15–21 级切成 2,374 张瓦片，WebP 压缩，按需加载。
+        默认视图自动贴合窗口大小，深色模式下边缘与界面同步。</p>
+      <ul class="facts">
+        <li><b>0.05 m</b><span>原始影像分辨率</span></li>
+        <li><b>21 级</b><span>最细瓦片层级</span></li>
+        <li><b>2,374</b><span>张瓦片</span></li>
+      </ul>
+    </div>
+    <div class="shot reveal">
+      <picture>
+        <source srcset="img/ui-map-dark.jpg" media="(prefers-color-scheme: dark)">
+        <img src="img/ui-map.jpg" width="1700" height="1062" loading="lazy" alt="地图页面，浅色模式下的校园正射影像">
+      </picture>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 三维 ============ -->
+<section class="feature dark" id="three">
+  <div class="wrap">
+    <div class="feature-head reveal">
+      <p class="kicker">三维</p>
+      <h2>走进去，<br>而不只是看一眼。</h2>
+      <p class="lede">Draco 把 366 MB 的模型压到 19 MB；八叉树 LOD 让 285 万点的点云在 60 fps 下自由漫游。
+        模型、点云、线框与 10 米地面网格，可以任意组合。</p>
+      <ul class="facts">
+        <li><b>19 MB</b><span>模型体积（原 366 MB）</span></li>
+        <li><b>214</b><span>点云 LOD 节点</span></li>
+        <li><b>60 fps</b><span>实时帧率</span></li>
+      </ul>
+    </div>
+    <div class="shot reveal">
+      <img src="img/ui-3d.jpg" width="1700" height="1062" loading="lazy" alt="三维页面，模型与点云叠加显示">
+    </div>
+  </div>
+</section>
+
+<!-- ============ 数据带 ============ -->
+<section class="stats">
+  <div class="wrap">
+    <h2 class="stats-title reveal">三次采集，<br>一套坐标。</h2>
+    <div class="stat-grid">
+      <div class="stat reveal"><b data-count="0.05" data-dec="2">0.05</b><span>米 / 像素</span><em>正射影像</em></div>
+      <div class="stat reveal wide"><b>11,319<span class="times-x">×</span>11,830</b><span>像素</span><em>影像尺寸</em></div>
+      <div class="stat reveal"><b><span data-count="34.3" data-dec="1">34.3</span><span class="times">M</span></b><span>个点</span><em>原始激光点云</em></div>
+      <div class="stat reveal"><b><span data-count="329051">329,051</span></b><span>个面</span><em>模型三角面</em></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 双视图 ============ -->
+<section class="duo">
+  <div class="wrap">
+    <div class="feature-head reveal">
+      <p class="kicker">视角对照</p>
+      <h2>俯视与平面，<br>看的是同一处。</h2>
+      <p class="lede">左边是三维模型的俯视角度，右边是地图页的深色界面。
+        两边的体育场、主楼、操场落在同样的相对位置。</p>
+    </div>
+    <div class="duo-grid">
+      <div class="duo-item reveal">
+        <img src="img/hero-3d-top.jpg" width="1205" height="904" loading="lazy" alt="俯视视角下的校园三维模型">
+        <p class="duo-cap">俯视 · 三维模型</p>
+      </div>
+      <div class="duo-item reveal">
+        <img src="img/ui-map-dark.jpg" width="1700" height="1062" loading="lazy" alt="深色模式下的地图页面">
+        <p class="duo-cap">平面 · 深色模式</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 坐标系 ============ -->
+<section class="geo" id="geo">
+  <div class="wrap geo-inner">
+    <div class="geo-copy reveal reveal-x">
+      <p class="kicker">同一坐标</p>
+      <h2>三种数据，<br>一个原点。</h2>
+      <p class="lede">影像用 UTM 49N 的绝对坐标；模型与点云把原点搬到校园中心，
+        用相对坐标省掉百万级的数值位。换算只差一次平移。</p>
+      <ul class="geo-list">
+        <li><span class="k">投影</span><span class="v">WGS 84 / UTM zone 49N</span></li>
+        <li><span class="k">RTC 中心</span><span class="v">743,469 · 3,857,681 · 0</span></li>
+        <li><span class="k">场景朝向</span><span class="v">+X 东 · +Y 北 · +Z 高程</span></li>
+        <li><span class="k">覆盖范围</span><span class="v">约 566 × 591 米</span></li>
+      </ul>
+    </div>
+
+    <div class="geo-axes reveal" aria-hidden="true">
+      <svg viewBox="0 0 320 320" fill="none">
+        <!-- 地面网格：等轴测椭圆，暗示水平面 -->
+        <g class="geo-grid" stroke="rgba(255,255,255,.10)" stroke-width="1">
+          <ellipse cx="160" cy="214" rx="118" ry="62"/>
+          <ellipse cx="160" cy="214" rx="88" ry="46"/>
+          <ellipse cx="160" cy="214" rx="58" ry="30"/>
+          <ellipse cx="160" cy="214" rx="28" ry="14"/>
+          <line x1="42" y1="214" x2="278" y2="214"/>
+          <line x1="160" y1="152" x2="160" y2="276"/>
+        </g>
+
+        <!-- 三根轴 -->
+        <path class="ax ax-z" pathLength="100" d="M160 214 L160 56" stroke="#bf5af2"/>
+        <path class="ax ax-x" pathLength="100" d="M160 214 L272 273" stroke="#0a84ff"/>
+        <path class="ax ax-y" pathLength="100" d="M160 214 L48 273" stroke="#5e5ce6"/>
+
+        <!-- 轴端箭头 -->
+        <g stroke-width="2" stroke-linecap="round">
+          <path d="M154 66 L160 54 L166 66" stroke="#bf5af2"/>
+          <path d="M262 267 L274 274 L262 279" stroke="#0a84ff"/>
+          <path d="M58 267 L46 274 L58 279" stroke="#5e5ce6"/>
+        </g>
+
+        <!-- 原点 -->
+        <circle class="origin" cx="160" cy="214" r="4.5" fill="#0a84ff"/>
+
+        <text class="ax-label" x="160" y="38" fill="#bf5af2" text-anchor="middle">+Z 高程</text>
+        <text class="ax-label" x="288" y="286" fill="#0a84ff" text-anchor="start">+X 东</text>
+        <text class="ax-label" x="32" y="286" fill="#5e5ce6" text-anchor="end">+Y 北</text>
+        <text class="ax-sub" x="160" y="316" fill="rgba(255,255,255,.42)" text-anchor="middle">RTC 原点 · 743,469 / 3,857,681</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 规格 ============ -->
+<section class="specs" id="specs">
+  <div class="wrap">
+    <h2 class="reveal">技术规格</h2>
+    <div class="spec-rows">
+      <div class="spec-row reveal">
+        <h3>数据来源</h3>
+        <dl>
+          <dt>正射影像</dt><dd>无人机正射拼接，GeoTIFF · EPSG:32649</dd>
+          <dt>三维模型</dt><dd>倾斜摄影实景建模，glTF 2.0 · Draco 压缩</dd>
+          <dt>点云</dt><dd>激光雷达扫描，LAS 1.4 · 点格式 7</dd>
+        </dl>
+      </div>
+      <div class="spec-row reveal">
+        <h3>影像</h3>
+        <dl>
+          <dt>尺寸</dt><dd>11,319 × 11,830 像素</dd>
+          <dt>地面分辨率</dt><dd>约 0.05 米 / 像素</dd>
+          <dt>覆盖范围</dt><dd>约 566 × 591 米</dd>
+          <dt>瓦片</dt><dd>15–21 级，256 像素，WebP</dd>
+        </dl>
+      </div>
+      <div class="spec-row reveal">
+        <h3>三维</h3>
+        <dl>
+          <dt>三角面</dt><dd>329,051 个</dd>
+          <dt>模型体积</dt><dd>19.3 MB（压缩前 366 MB）</dd>
+          <dt>点云</dt><dd>2,852,224 点 · 214 个 LOD 节点</dd>
+          <dt>渲染</dt><dd>Three.js · WebGL · 300 万点预算</dd>
+        </dl>
+      </div>
+      <div class="spec-row reveal">
+        <h3>坐标系</h3>
+        <dl>
+          <dt>投影</dt><dd>WGS 84 / UTM zone 49N</dd>
+          <dt>原点</dt><dd>743,469 / 3,857,681（RTC 中心）</dd>
+          <dt>场景朝向</dt><dd>+X 东，+Y 北，+Z 高程</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 结尾 ============ -->
+<section class="closing">
+  <div class="wrap">
+    <h2 class="reveal">现在，去看一眼。</h2>
+    <div class="cta-row center reveal">
+      <a class="btn btn-primary" href="https://andydot.dpdns.org/map">打开地图</a>
+      <a class="btn btn-ghost" href="https://andydot.dpdns.org/3d">浏览三维 <span class="chev">›</span></a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap foot-inner">
+    <div class="foot-brand">
+      <span class="gn-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+          <path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/>
+          <path d="M9 4v13.5M15 6.5V20"/>
+        </svg>
+      </span>
+      MapForZZ7Z
+    </div>
+    <div class="foot-links">
+      <a href="https://andydot.dpdns.org/map">地图</a>
+      <a href="https://andydot.dpdns.org/3d">三维</a>
+      <a href="https://github.com/Andydot-ui/MapForZZ7Z">GitHub</a>
+    </div>
+    <p class="foot-note">数据为项目测绘成果，仅用于展示。影像与模型版权归原采集方所有。</p>
+  </div>
+</footer>
+
+<script src="js/site.js" defer></script>
+</body>
+</html>

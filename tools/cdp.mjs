@@ -17,6 +17,8 @@ const MOBILE = process.env.CDP_MOBILE === '1';
 const SCHEME = process.env.CDP_SCHEME || '';
 const VW = Number(process.env.CDP_W || (MOBILE ? 390 : 1440));
 const VH = Number(process.env.CDP_H || (MOBILE ? 844 : 900));
+// CDP_DPR=2 出视网膜级截图（用于产品介绍页素材）
+const DPR = Number(process.env.CDP_DPR || (MOBILE ? 3 : 1));
 const PORT = 9333;
 
 const proc = spawn(CHROME, [
@@ -92,9 +94,13 @@ try {
   }
   if (MOBILE) {
     await rpc(ws, ++id, 'Emulation.setDeviceMetricsOverride', {
-      width: VW, height: VH, deviceScaleFactor: 3, mobile: true,
+      width: VW, height: VH, deviceScaleFactor: DPR, mobile: true,
     });
     await rpc(ws, ++id, 'Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+  } else if (DPR !== 1) {
+    await rpc(ws, ++id, 'Emulation.setDeviceMetricsOverride', {
+      width: VW, height: VH, deviceScaleFactor: DPR, mobile: false,
+    });
   }
   await rpc(ws, ++id, 'Page.navigate', { url });
   await sleep(waitMs);

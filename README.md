@@ -1,7 +1,9 @@
 # MapForZZ7Z
 
 2D 正射影像地图 + 三维模型 + 点云，Apple Maps 风格界面。
-站点由 **Cloudflare Pages** 托管（Direct Upload），不再使用 GitHub Pages。
+
+应用本体由 **Cloudflare Pages** 托管（Direct Upload）；
+`site/` 下的产品介绍页由 **GitHub Pages** 托管（`gh-pages` 分支），两者互不干扰。
 
 ## 页面
 
@@ -9,6 +11,7 @@
 | --- | --- | --- |
 | 影像地图 | `/map` | MapLibre GL JS + XYZ WebP 瓦片（z15–z21） |
 | 三维场景 | `/3d` | Three.js 渲染 GLB（Draco）+ 八叉树 LOD 点云 |
+| 产品介绍 | 见下 | Apple 产品页风格的单页介绍，深浅色自动切换 |
 
 `/` 会落到地图页；`/index.html`、`/3d.html` 重定向到新路径（见 `web/_redirects`）。
 
@@ -60,10 +63,34 @@ node tools/deploy.mjs              # Cloudflare Pages Direct Upload
 线上地址：<https://andydot.dpdns.org/map>（地图）与 <https://andydot.dpdns.org/3d>（三维）。
 `https://mapforzz7z.pages.dev/map`、`/3d` 同样可用。
 
+介绍页单独走 GitHub Pages（`gh-pages` 分支，内容来自 `site/`）：
+<https://andydot-ui.github.io/MapForZZ7Z/>
+
+```bash
+node tools/deploy-ghpages.cjs       # site/ -> gh-pages（走 GitHub API）
+```
+
+本机直连 `github.com:443` 会被重置，脚本改用 REST API 推内容；
+`api.github.com` 也偶发超时，脚本内已带重试。改完 `site/` 重跑一次即可。
+
+## 介绍页
+
+`site/` 是一页静态站，不依赖构建工具，直接上传即可：
+
+| 文件 | 说明 |
+| --- | --- |
+| `index.html` | 单页：概览 / 三层数据 / 地图 / 三维 / 数据 / 双视角 / 坐标系 / 规格 |
+| `css/site.css` | 浅色与深色两套 token，`prefers-color-scheme` 自动切换 |
+| `js/site.js` | 滚动进度线、渐入、数字滚动、视差（尊重 `prefers-reduced-motion`） |
+| `img/*.jpg` | 界面截图、三维主视觉与三张分层图（单张 ≤ 340 KB） |
+
+截图素材由 `tools/site_images.py`（缩放压缩）与 `tools/trim_hero.py`（按内容包围盒裁剪）生成，
+三张分层图由 `tools/site_crops.py` 从主视觉居中裁出，抓屏用 `tools/cdp.mjs`（DPR 2）。整站约 2.0 MB。
+
 ## 目录
 
 ```
-web/                 站点根目录（Pages 上传内容）
+web/                 应用站点根目录（Cloudflare Pages 上传内容）
   map.html           地图页
   3d.html            三维页
   _redirects         /map、/3d、/ 路由
@@ -74,6 +101,7 @@ web/                 站点根目录（Pages 上传内容）
   tiles/             XYZ WebP 瓦片
   models/            GLB 模型
   pointcloud/        octree.json + 节点 .bin
+site/                产品介绍页（GitHub Pages 上传内容）
 tools/               构建与部署脚本（不参与部署）
 ```
 
