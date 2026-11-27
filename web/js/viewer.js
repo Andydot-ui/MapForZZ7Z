@@ -397,11 +397,22 @@ function setProgress(p, text) {
   bar.style.width = (Math.min(1, p) * 100).toFixed(1) + '%';
   if (text) loaderText.textContent = text;
 }
+
+/* 加载分步清单：点云元数据 → 三维模型 → LOD 节点 */
+const lsteps = {};
+document.querySelectorAll('.lstep').forEach((el) => { lsteps[el.dataset.step] = el; });
+function markStep(name, state) {
+  const el = lsteps[name];
+  if (!el) return;
+  el.classList.remove('active', 'done');
+  if (state) el.classList.add(state);
+}
 // 首屏只等点云元数据 + 地面影像；模型与点云节点在后台继续流式加载，
 // 避免慢网络下长时间停留在加载页。
 function dismissLoader() {
   if (loader.classList.contains('hidden')) return;
   setProgress(1, '场景就绪');
+  markStep('lod', 'done');
   setTimeout(() => loader.classList.add('hidden'), 300);
 }
 function maybeHideLoader() {
@@ -426,6 +437,7 @@ gltfLoader.load(
     });
     modelGroup.add(gltf.scene);
     modelDone = true;
+    markStep('model', 'done');
     updateStats();
     maybeHideLoader();
   },
@@ -449,6 +461,9 @@ const statFps = document.getElementById('statFps');
 const cloudSub = document.getElementById('cloudSub');
 const modelSub = document.getElementById('modelSub');
 const compassNeedle = document.getElementById('compassNeedle');
+const dsTris = document.getElementById('dsTris');
+const dsPts = document.getElementById('dsPts');
+const dsLod = document.getElementById('dsLod');
 
 function fmt(n) {
   if (n >= 1e6) return (n / 1e6).toFixed(2) + ' M';
@@ -463,6 +478,13 @@ function updateStats() {
     modelSub.textContent = modelDone
       ? `Draco · ${fmt(triangleCount)} 面`
       : '流式载入中…';
+  }
+  if (dsTris) dsTris.textContent = triangleCount ? `${triangleCount.toLocaleString('en-US')} 面` : '载入中…';
+  if (dsPts) dsPts.textContent = PC.points ? `${PC.points.toLocaleString('en-US')} 点` : '载入中…';
+  if (dsLod) {
+    dsLod.textContent = PC.nodeCount
+      ? `八叉树 · ${PC.visibleNodes.size}/${PC.nodeCount} 节点`
+      : '八叉树 · 214 节点';
   }
 }
 
@@ -585,14 +607,67 @@ addEventListener('resize', () => {
 });
 
 /* ---------- 启动 ---------- */
+markStep('cloud', 'active');
 loadCloudMeta().then(() => {
   cloudDone = true;
+  markStep('cloud', 'done');
+  markStep('model', 'active');
   maybeHideLoader();
   updateLOD();
+  markStep('lod', 'active');
+}).catch(() => {
+  markStep('cloud', 'done');
 });
 
 setProgress(0.04, '初始化渲染器…');
 requestAnimationFrame(tick);
+
+/* ---------- 数据详情抽屉 ---------- */
+const dataBtn = document.getElementById('dataBtn');
+const dataSheet = document.getElementById('dataSheet');
+const dataClose = document.getElementById('dataClose');
+function setDataSheet(open) {
+  if (!dataSheet || !dataBtn) return;
+  dataSheet.classList.toggle('open', open);
+  dataSheet.setAttribute('aria-hidden', open ? 'false' : 'true');
+  dataBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+if (dataBtn) dataBtn.addEventListener('click', () => {
+  setDataSheet(!dataSheet.classList.contains('open'));
+});
+if (dataClose) dataClose.addEventListener('click', () => setDataSheet(false));
+
+/* 点击画布时收起抽屉（移动端底部面板尤其需要） */
+renderer.domElement.addEventListener('pointerdown', () => {
+  if (dataSheet && dataSheet.classList.contains('open')) setDataSheet(false);
+});
+
+addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') setDataSheet(false);
+});
+
+/* ---------- 首次操作提示 ---------- */
+const hintToast = document.getElementById('hintToast');
+let hintTimer = null;
+function showHint() {
+  if (!hintToast) return;
+  hintToast.classList.add('show');
+  hintTimer = setTimeout(() => hintToast.classList.remove('show'), 4600);
+}
+['pointerdown', 'wheel'].forEach((ev) => {
+  addEventListener(ev, () => {
+    if (hintToast) hintToast.classList.remove('show');
+    clearTimeout(hintTimer);
+  }, { once: true, passive: true });
+});
+// 场景就绪后再提示
+if (loader && loader.classList.contains('hidden')) showHint();
+else {
+  const obs = new MutationObserver(() => {
+    if (loader.classList.contains('hidden')) { showHint(); obs.disconnect(); }
+  });
+  obs.observe(loader, { attributes: true, attributeFilter: ['class'] });
+}
 
 // 调试/联调用：便于在控制台检查取景与图层状态
 window.__map3d = {

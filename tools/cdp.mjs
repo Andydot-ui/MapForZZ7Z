@@ -29,6 +29,8 @@ const proc = spawn(CHROME, [
   `--window-size=${VW},${VH}`,
   '--no-first-run',
   '--no-default-browser-check',
+  // 可选：CDP_HOST_RULES="MAP example.com 1.2.3.4"，用于本地 DNS 解析不了的自定义域名
+  ...(process.env.CDP_HOST_RULES ? ['--host-resolver-rules=' + process.env.CDP_HOST_RULES] : []),
   '--user-data-dir=' + 'C:\\Users\\andyd\\Documents\\deepseek-harness\\default-workspace\\MapForZZ7Z\\tools\\chromeprofile',
   'about:blank',
 ], { stdio: 'ignore' });

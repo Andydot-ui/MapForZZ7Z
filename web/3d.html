@@ -23,6 +23,9 @@
   <nav class="topbar-right dark">
     <a class="pill" href="/map">地图</a>
     <a class="pill active" href="/3d">三维模型 &amp; 点云</a>
+    <button class="icon-btn dark" id="dataBtn" aria-label="数据详情" aria-expanded="false" aria-controls="dataSheet">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><circle cx="12" cy="7.6" r="1" fill="currentColor" stroke="none"/></svg>
+    </button>
   </nav>
 </header>
 
@@ -32,7 +35,20 @@
     <div class="ring"><span></span></div>
     <div class="loader-text" id="loaderText">正在载入场景…</div>
     <div class="progress"><div class="bar" id="bar"></div></div>
+    <div class="loader-steps">
+      <span class="lstep" data-step="cloud">点云元数据</span>
+      <span class="lstep" data-step="model">三维模型</span>
+      <span class="lstep" data-step="lod">LOD 节点</span>
+    </div>
   </div>
+</div>
+
+<!-- 首次进入的操作提示 -->
+<div class="hint-toast dark" id="hintToast" role="status">
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+    <path d="M5 12a7 7 0 0 1 14 0"/><path d="M12 5v14"/><path d="M9 8 12 5l3 3"/>
+  </svg>
+  <span>拖动旋转 · 滚轮缩放 · 右键平移</span>
 </div>
 
 <!-- 移动端唤出图层面板的胶囊按钮 -->
@@ -97,6 +113,47 @@
     <label for="ptSize">点大小</label>
     <input type="range" id="ptSize" min="0.4" max="6" step="0.1" value="1.6">
     <span class="val" id="ptSizeVal">1.6</span>
+  </div>
+</aside>
+
+<!-- 数据详情抽屉 -->
+<aside class="data-sheet" id="dataSheet" aria-hidden="true" aria-label="数据详情">
+  <div class="sheet-grip" aria-hidden="true"></div>
+  <header class="ds-head">
+    <div>
+      <p class="ds-kicker">数据详情</p>
+      <h2 class="ds-title">三层数据，同一套坐标</h2>
+    </div>
+    <button class="ds-close" id="dataClose" aria-label="关闭">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </header>
+
+  <div class="ds-block">
+    <div class="ds-row"><span class="ds-key">三维模型</span><span class="ds-val">glTF 2.0 + Draco</span></div>
+    <div class="ds-row"><span class="ds-key">三角面</span><span class="ds-val" id="dsTris">—</span></div>
+    <div class="ds-row"><span class="ds-key">贴图</span><span class="ds-val">79 张 · 最长边 1024 px</span></div>
+    <div class="ds-row"><span class="ds-key">体积</span><span class="ds-val">366 MB → 19.3 MB</span></div>
+  </div>
+
+  <div class="ds-block">
+    <div class="ds-row"><span class="ds-key">激光点云</span><span class="ds-val">LAS 1.4 PDRF 7</span></div>
+    <div class="ds-row"><span class="ds-key">原始点数</span><span class="ds-val">34,316,746</span></div>
+    <div class="ds-row"><span class="ds-key">渲染点数</span><span class="ds-val" id="dsPts">—</span></div>
+    <div class="ds-row"><span class="ds-key">LOD</span><span class="ds-val" id="dsLod">八叉树 · 214 节点</span></div>
+  </div>
+
+  <div class="ds-block">
+    <div class="ds-row"><span class="ds-key">坐标原点</span><span class="ds-val">743,469 / 3,857,681 / 0</span></div>
+    <div class="ds-row"><span class="ds-key">场景朝向</span><span class="ds-val">+X 东 · +Y 北 · +Z 高程</span></div>
+    <div class="ds-row"><span class="ds-key">覆盖范围</span><span class="ds-val">约 566 × 591 米</span></div>
+  </div>
+
+  <p class="ds-note">点云按视锥与距离流式加载，单节点最大 0.51 MB；模型几何经 Draco 压缩，贴图按最长边 1024 px 重采样。</p>
+
+  <div class="ds-actions">
+    <a class="ds-btn primary" href="/map">在地图上查看</a>
+    <a class="ds-btn" href="https://github.com/Andydot-ui/MapForZZ7Z" target="_blank" rel="noopener">GitHub 源码</a>
   </div>
 </aside>
 
